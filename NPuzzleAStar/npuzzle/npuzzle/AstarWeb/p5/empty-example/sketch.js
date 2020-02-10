@@ -61,7 +61,18 @@ player.pos = new pos(1, 1);
 let cycleTrailMax = player.cycleMax / 2;
 let cycleTrail = cycleTrailMax;
 
-let mode = 0;
+let pathKey = {};
+pathKey.keyCode = 80;
+pathKey.letter = 'p';
+let brushKey = {};
+brushKey.keyCode = 66;
+brushKey.letter = 'b';
+let wallKey = {};
+wallKey.keyCode = 87;
+wallKey.letter = 'w';
+
+let mode = pathKey;
+
 // taille de l'écran (le canvas)
 
 function setupRender()
@@ -165,15 +176,12 @@ function setup()
 
 function keyPressed()
 {
-	if(keyCode == 77)
-		switchBuildAndPathMode();
-}
-
-//toutes les fonctions d'input.
-function switchBuildAndPathMode()
-{
-	console.log("mode has been changed : mode == ", mode);
-	mode = (mode == 0 ? 1 : 0);
+	if (keyCode == brushKey.keyCode)
+		mode = brushKey.letter;
+	else if (keyCode == pathKey.keyCode)
+		mode = pathKey.letter;
+	else if (keyCode == wallKey.keyCode)
+		mode = wallKey.letter;
 }
 
 
@@ -253,17 +261,20 @@ function draw()
 	if (pathIsDone == true)
 		shortTrail();
 }
-/*
+
+
 function mouseDragged()
 {
-  let mousePosX = floor( map(mouseX, 0, size.width, 0, grid.x) );
-  let mousePosY = floor( map(mouseY, 0, size.height, 0, grid.y));
-  if (grid.array[mousePosY][mousePosX].value == 1)
-	grid.array[mousePosY][mousePosX].value = 0;
-  else if (grid.array[mousePosY][mousePosX].value == 0)
-	grid.array[mousePosY][mousePosX].value = 1;
+	let mousePosX = floor( map(mouseX, 0, size.width, 0, grid.x) );
+	let mousePosY = floor( map(mouseY, 0, size.height, 0, grid.y));
+	if (mousePosX < 0 || mousePosX >= grid.x || mousePosY < 0 || mousePosY >= grid.y)
+		return;
+	if (mode == wallKey.letter && grid.array[mousePosY][mousePosX].value == 0)
+		grid.array[mousePosY][mousePosX].value = 1;
+	else if (mode == brushKey.letter && grid.array[mousePosY][mousePosX].value == 1)
+		grid.array[mousePosY][mousePosX].value = 0;
 }
-*/
+
 
 function lookForPath(mousePosX, mousePosY)
 {
@@ -286,20 +297,29 @@ function lookForPath(mousePosX, mousePosY)
 
 function buildNewWall(mousePosX, mousePosY)
 {
-	if (grid.array[mousePosY][mousePosX].value == 1 || grid.array[mousePosY][mousePosX].value == 0)
-	{
-		if (grid.array[mousePosY][mousePosX].value == 1)
-			grid.array[mousePosY][mousePosX].value = 0;
-		else if (grid.array[mousePosY][mousePosX].value == 0)
+	if (grid.array[mousePosY][mousePosX].value == 0)
 			grid.array[mousePosY][mousePosX].value = 1;
-	}
+}
+
+function destroyWall(mousePosX, mousePosY)
+{	
+	if (grid.array[mousePosY][mousePosX].value == 1)
+		grid.array[mousePosY][mousePosX].value = 0;
 }
 
 function mousePressed()
 {
-  let mousePosX = floor( map(mouseX, 0, size.width, 0, grid.x) );
-  let mousePosY = floor( map(mouseY, 0, size.height, 0, grid.y));
-  return mode == 0 ? lookForPath(mousePosX, mousePosY) : buildNewWall(mousePosX, mousePosY);
+	let mousePosX = floor( map(mouseX, 0, size.width,  0, grid.x) );
+	let mousePosY = floor( map(mouseY, 0, size.height, 0, grid.y));
+	if (mousePosX < 0 || mousePosX >= grid.x || mousePosY < 0 || mousePosY >= grid.y)
+		return;
+	if (mode == brushKey.letter)
+		destroyWall(mousePosX, mousePosY);
+	else if (mode == wallKey.letter)
+		buildNewWall(mousePosX, mousePosY);
+	else if (mode == pathKey.letter)
+		lookForPath(mousePosX, mousePosY);
+
 }
 
 function clearTrail()
