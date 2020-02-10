@@ -9,7 +9,7 @@ let size = {};
 size.width = 900;
 size.height = 900;
 
-let percentObstacles = 25;
+let percentObstacles = 3;
 let amount = 75;
 // declaration de tout mes outils
 
@@ -61,6 +61,7 @@ player.pos = new pos(1, 1);
 let cycleTrailMax = player.cycleMax / 2;
 let cycleTrail = cycleTrailMax;
 
+let mode = 0;
 // taille de l'écran (le canvas)
 
 function setupRender()
@@ -159,7 +160,22 @@ function setup()
 	canvas = createCanvas(size.width, size.height);
 	grid = setupGrid();
 	render = setupRender();
+
 }
+
+function keyPressed()
+{
+	if(keyCode == 77)
+		switchBuildAndPathMode();
+}
+
+//toutes les fonctions d'input.
+function switchBuildAndPathMode()
+{
+	console.log("mode has been changed : mode == ", mode);
+	mode = (mode == 0 ? 1 : 0);
+}
+
 
 function UpdatePlayerPos()
 {
@@ -249,17 +265,8 @@ function mouseDragged()
 }
 */
 
-function mousePressed()
+function lookForPath(mousePosX, mousePosY)
 {
-  let mousePosX = floor( map(mouseX, 0, size.width, 0, grid.x) );
-  let mousePosY = floor( map(mouseY, 0, size.height, 0, grid.y));
-/*	if (grid.array[mousePosY][mousePosX].value == 1 || grid.array[mousePosY][mousePosX].value == 2)
-	{
-		if (grid.array[mousePosY][mousePosX].value == 1)
-			grid.array[mousePosY][mousePosX].value = 0;
-		else if (grid.array[mousePosY][mousePosX].value == 0)
-			grid.array[mousePosY][mousePosX].value = 1;
-	}*/
 	if (grid.array[mousePosY][mousePosX].value == 0)
 	{
 		if (trail != null && trail.length != 0)
@@ -275,7 +282,24 @@ function mousePressed()
 		if (path != null)
 			trail = new Array();
 	}
+}
 
+function buildNewWall(mousePosX, mousePosY)
+{
+	if (grid.array[mousePosY][mousePosX].value == 1 || grid.array[mousePosY][mousePosX].value == 0)
+	{
+		if (grid.array[mousePosY][mousePosX].value == 1)
+			grid.array[mousePosY][mousePosX].value = 0;
+		else if (grid.array[mousePosY][mousePosX].value == 0)
+			grid.array[mousePosY][mousePosX].value = 1;
+	}
+}
+
+function mousePressed()
+{
+  let mousePosX = floor( map(mouseX, 0, size.width, 0, grid.x) );
+  let mousePosY = floor( map(mouseY, 0, size.height, 0, grid.y));
+  return mode == 0 ? lookForPath(mousePosX, mousePosY) : buildNewWall(mousePosX, mousePosY);
 }
 
 function clearTrail()
