@@ -9,7 +9,7 @@ let size = {};
 size.width = 900;
 size.height = 900;
 
-let percentObstacles = 3;
+let percentObstacles = 10;
 let amount = 75;
 // declaration de tout mes outils
 
@@ -71,7 +71,7 @@ let wallKey = {};
 wallKey.keyCode = 87;
 wallKey.letter = 'w';
 
-let mode = pathKey;
+let mode = pathKey.letter;
 
 // taille de l'écran (le canvas)
 
