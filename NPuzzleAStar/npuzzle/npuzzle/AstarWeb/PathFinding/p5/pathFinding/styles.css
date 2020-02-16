@@ -1,0 +1,40 @@
+﻿body
+{
+		background-color : #293241;
+		color: #FFFFFF;
+}
+
+.firstElement
+{
+		margin-top : 0vh;
+		left: 0;
+		top:0;
+}
+
+.canvasP5
+{
+ width:0px;	
+}
+
+
+.aStarText
+{
+color: #FFFFFF;
+	
+}
+
+.interactiveBlock
+{
+		margin-top : 2vh;
+		margin-left : 2vw;
+}
+
+.footerClass
+{
+	margin-top : 60vh;
+}
+
+.textContainer
+{
+    margin-top : 60vh;
+}
