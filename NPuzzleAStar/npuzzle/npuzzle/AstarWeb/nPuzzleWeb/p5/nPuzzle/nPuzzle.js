@@ -1,154 +1,160 @@
-class nPuzzle
-{
-	constructor(sizeGrid)
-	{
-		this.grid = this.createGrid(sizeGrid);
-		this.size = sizeGrid;
-	}
-}
-
-function fillGrid(grid, size)
-{
-	let goalValue = size * size;
-	let array = ["RIGHT","DOWN","LEFT","UP"];
-	let dir = 0;
-	let countDir = size;
-	let count = 0;
-	let y = 0;
-	let x = 0;
-	let countdown = 1;
-	while (++count <= goalValue)
-	{
-		grid[y][x].value = count == goalValue ? 0 : count;
-		console.log("y = ", y, " x = ", x, "value = ", grid[y][x].value);
-		countDir--;
-		if (array[dir] == "RIGHT")
-			countDir == 0 ? y++ : x++;
-		else if (array[dir] == "DOWN")
-			countDir == 0 ? x-- : y++;
-		else if (array[dir] == "LEFT")
-			countDir == 0 ? y-- : x--;
-		else if (array[dir] == "UP")
-			countDir == 0 ? x++ : y--;
-		if (countDir == 0)
-		{
-			countdown++;
-			if (countdown == 2)
-			{
-				countdown = 0;
-				size--;
-			}
-			dir = (dir + 1) % array.length;
-			countDir = size;
-		}
-	}
-}
-
-nPuzzle.prototype.createGrid = function(size)
-{
-	let v = 0;
-	let grid = new Array();
-	for (let y = 0; y < size; ++y)
-	{
-		grid[y] = Array();
-		for (let x = 0; x < size; ++x)
-		{
-			v++;
-			grid[y][x] = new Node(y, x, 0);
-		}
-	}
-	fillGrid(grid, size);
-	return grid;
-}
-
-nPuzzle.prototype.print = function(color)
-{
-	stroke(color.r, color.g, color.b);
-	fill(color.r, color.g, color.b);
-	for (let y = 0; y < this.size; ++y)
-		for (let x = 0; x < this.size; ++x)
-			rect(render.spaceX / 4 + x * render.squareWidth + (x * render.spaceX / 4), render.spaceX / 4 +  y * render.squareHeight + (y * render.spaceY / 4), render.squareWidth, render.squareHeight);
-	stroke(0);
-	fill(0);
-}
-
-class Node
-{
-	constructor (_y, _x, value)
-	{
-		this.pos = new pos(_y, _x);
-		this.gCost = 0;
-		this.hCost = 0;
-		this.value = 0;
-	}
-};
-
-Node.prototype.fCost = function()
-{
-	return this.gCost + this.hCost;
-}
-
-class pos
-{
-	constructor(_y, _x)
-	{
-		this.y = _y;
-		this.x = _x;
-	}
-};
-
 // définition des variables environnementales
-let color;
-let npuzzle;
-let path = null;
-let dest;
 
-let size = {};
-size.width = 900;
-size.height = 900;
-size.squareSize = 4;
+let env = {};
+env.width = 900;
+env.height = 900;
+env.squareSize = 3;
+
+let color; // couleurs des carrés du npuzzle
+let npuzzle; // le npuzzle proprement dit
+let path = null; // variable stockant l'ensemble des mouvement à faire pour arriver au résultat final.'
 
 let canvas; 
 let render;
 
-function generateNewEnvironment()
+let pathIndex = 0;
+
+let animationAreOn = true;
+let animator = null;
+let scrambler = null;
+
+let PERCENT = 20;
+let tmpPercent = PERCENT;
+let CYCLE_MAX = 0;
+let AMOUNT_MOVES = 14;
+
+let amountStack = 7500;
+let stackNpuzzle;
+
+function setupStack()
 {
-	canvas = createCanvas(size.width, size.height);
-	canvas.position(window.innerWidth * 0.25, window.innerHeight * 0.07);
+	stackNpuzzle = new Array();
+	for(let y = 0; y < amountStack; ++y)
+		stackNpuzzle.push(npuzzle.copy());
 }
 
-function setupRender()
+function mousePressed()
 {
-	render = {};
-	render.spaceX = size.width * 0.025;
-	render.spaceY = size.height * 0.025;
-	render.squareWidth = (size.width - render.spaceX) / size.squareSize;
-	render.squareHeight = (size.height - render.spaceY) / size.squareSize;
+	if (animator != null || npuzzle == null)
+		return;
+	let mousePosX = floor(map(mouseX, 0, env.width, 0, env.squareSize));
+	let mousePosY = floor(map(mouseY, 0, env.height, 0, env.squareSize));
+	npuzzle.applyMove(mousePosY, mousePosX);
 }
 
-function setupNpuzzle()
+function getRandomInt(max)
 {
-	npuzzle = new nPuzzle(size.squareSize);
+  return Math.floor(Math.random() * Math.floor(max));
 }
 
-function setupColor(r,g,b)
+// cette fonction est appelé lorsque le bouton launch A* est cliqué.
+function launchAstar()
 {
-	color = {};
-	color.r = r;
-	color.g = g;
-	color.b = b;
+	pathIndex = 0;
+	npuzzle.gCost = 0;
+	npuzzle.parent = 0;
+	npuzzle.id = 0;
+	npuzzle.defMove = null;
+	path = aStar(npuzzle.copy());
+	console.log("stack size after path : ", stackNpuzzle.length);
+}
+
+function launchScramble()
+{
+	path = null;
+	scrambler.isOn = true;
 }
 
 function setup() 
 {
-	frameRate(60);
+	frameRate(80);
 	setupColor(0, 0, 0);
 	setupRender();
 	generateNewEnvironment();
 	setupNpuzzle();
+	setupScrambler();
+	setupDom();
+	setupStack();
+	console.log("Setup is ready");
+	console.log("stack size : ", stackNpuzzle.length);
 }
+
+function checkAnimation()
+{
+	if (animator != null)
+		if (animator.animate() == false)
+		{
+			npuzzle.swapNode(npuzzle.grid, animator.originStartNodePos.y, animator.originStartNodePos.x, animator.originEndNodePos.y, animator.originEndNodePos.x);
+		//	console.log("Animation end");
+	//		console.log(npuzzle.hCost());
+			animator = null;
+		}
+}
+
+function checkNextScramble()
+{
+//	scrambler.isOn = false;
+//	return;
+	if (scrambler == null || scrambler.isOn == false || animator != null)
+		return;
+	scrambler.oneRandomMove();
+}
+
+function checkNextMove()
+{
+	if (path == null || animator != null || scrambler.isOn == true)
+		return;
+	if (path[pathIndex] == "UP")
+	{
+		console.log("UP : ", path[pathIndex]);
+		if (npuzzle.Up() == true)
+			pathIndex++;
+	}
+	else if (path[pathIndex] == "DOWN")
+	{
+		console.log("DOWN : ", path[pathIndex]);
+		if (npuzzle.Down() == true)
+			pathIndex++;
+	}
+	else if (path[pathIndex] == "RIGHT")
+	{
+		console.log("RIGHT : ", path[pathIndex]);
+
+		if (npuzzle.Right() == true)
+			pathIndex++;
+	}
+	else if (path[pathIndex] == "LEFT")
+	{
+		console.log("LEFT : ", path[pathIndex]);
+		if (npuzzle.Left() == true)
+			pathIndex++;
+	}
+}
+
+function checkForAnimationSpeed()
+{
+	if (i_obstacles.value != tmpPercent)
+	{
+		PERCENT = parseInt(i_obstacles.value);
+		tmpPercent = PERCENT;
+		p_percentAnim.innerHTML = "Animation Speed : " + tmpPercent;
+	}
+}
+
+function updateInformation()
+{
+	checkForAnimationSpeed();
+	checkNextScramble();
+	checkAnimation();
+	checkNextMove();
+}
+
 function draw()
 {
+	if (npuzzle == null)
+		return;
 	background(240);
+	updateInformation();
 	npuzzle.print(color);
+
 }
