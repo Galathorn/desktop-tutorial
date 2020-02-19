@@ -15,7 +15,6 @@ nPuzzle::nPuzzle(void) : _size(0), _id(0), _gCost(0), _parent(nullptr), _defMove
 
 nPuzzle::~nPuzzle(void) {}
 
-
 void nPuzzle::setupGrid(short size)
 {
 	_grid = std::vector<std::vector<Node>>(_size);
@@ -108,7 +107,7 @@ bool nPuzzle::Up()
 {
 	if (_empty->getPos().getY() + 1 >= _size)
 		return false;
-		cout << "UP" << std::endl;
+		//cout << "UP" << std::endl;
 		Node n = _grid[_empty->getPos().getY() + 1][_empty->getPos().getX()];
 		swapNode(n.getPos().getY(), n.getPos().getX(), _empty->getPos().getY(), _empty->getPos().getX());
 		return true;
@@ -118,7 +117,7 @@ bool nPuzzle::Right()
 {
 	if (_empty->getPos().getX() - 1 < 0)
 		return false;
-		cout << "RIGHT" << std::endl;
+	//	cout << "RIGHT" << std::endl;
 
 		Node n = _grid[_empty->getPos().getY()][_empty->getPos().getX() - 1];
 		swapNode(n.getPos().getY(), n.getPos().getX(), _empty->getPos().getY(), _empty->getPos().getX());
@@ -129,7 +128,7 @@ bool nPuzzle::Down()
 {
 	if (_empty->getPos().getY() - 1 < 0)
 		return false;
-		cout << "DOWN" << std::endl;
+	//	cout << "DOWN" << std::endl;
 
 		Node n = _grid[_empty->getPos().getY() - 1][_empty->getPos().getX()];
 		swapNode(n.getPos().getY(), n.getPos().getX(), _empty->getPos().getY(), _empty->getPos().getX());
@@ -140,10 +139,41 @@ bool nPuzzle::Left()
 {
 	if (_empty->getPos().getX() + 1 >= _size)
 		return false;
-		cout << "LEFT" << std::endl;
+//		cout << "LEFT" << std::endl;
 
 		Node n = _grid[_empty->getPos().getY()][_empty->getPos().getX() + 1];
 		swapNode(n.getPos().getY(), n.getPos().getX(), _empty->getPos().getY(), _empty->getPos().getX());
+		return true;
+}
+
+// fonctions de copy de l'élément en cours
+
+// la fonction copyGrid va prendre en paramètre une grille pré éxistante et va copier chacun de ses éléments dans la grille de son instance.
+// si jamais elle rencontre la grille empty, elle en profite pour attribuer le pointeur empty également afin de ne pas avoir à reparcourir
+// l'ensemble de la grille plus tard juste pour cela.
+void nPuzzle::copyGrid(std::vector<std::vector<Node>> const &grid, short gridSize)
+{
+		for(short y = 0; y < gridSize; ++y)
+			for(short x  = 0; x < gridSize; ++x)
+			{
+					_grid[y][x] = grid[y][x];
+					if (_grid[y][x].getValue() == 0)
+						_empty = &(_grid[y][x]);
+			}
+}
+
+// cette fonction prend en paramètre une référence vers un puzzle pré éxistant et va copier l'intégralité des valeurs de l'instance en cours
+// vers cette référence. Cette fonction sera l'équivalente de la fonction qui renverra une copie égal à l'instance en cours sauf qu'elle ne prend
+// pas de mémoire supplémentaire. Elle permet l'utilisation d'un pooling system de nPuzzle non assigné.
+// Cette fonction ne copie pas tout à fait les bonnes valeurs. Elle modifie tout de même l'ID de l'instance généré pour montrer qu'elle ne sont pas les mêmes.
+bool nPuzzle::copyData(nPuzzle &newPuzzle)
+{
+		if (newPuzzle.getSize() > 0 && newPuzzle.getSize() != this->getSize())
+			return false;
+		newPuzzle.setId(_id + 1);
+		newPuzzle.setSize(_size);
+		newPuzzle.setGcost(_gCost);
+		newPuzzle.copyGrid(_grid, _size);
 		return true;
 }
 

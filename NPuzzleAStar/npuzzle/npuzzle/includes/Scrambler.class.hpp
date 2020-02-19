@@ -3,9 +3,9 @@
 
 #include <vector>
 #include <iostream>
-#include "../includes/nPuzzle.class.hpp"
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
+#include "../includes/nPuzzle.class.hpp"
 
 using namespace std;
 

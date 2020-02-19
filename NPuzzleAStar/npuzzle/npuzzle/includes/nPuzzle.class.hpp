@@ -44,6 +44,12 @@ class nPuzzle
 
 	void 																	fillEmpty(); // cette fonction va chercher la case vide dans le puzzle et l'attribuer.
 	void 																	swapNode(short y, short x, short emptyY, short emptyX); // fonction permettant de swapper deux node.
+
+// cette fonction prend en paramètre une référence vers une grille préexistante et copie chaque élément vers la grille de l'instance en cours.
+	void 																	copyGrid(std::vector<std::vector<Node>> const &grid, short gridSize);
+	bool 																	copyData(nPuzzle &n);
+
+
 // movements functions
 	bool 																	Up();
 	bool 																	Right();
@@ -51,13 +57,13 @@ class nPuzzle
 	bool 																	Left();
 
 private:
-	short				_size;
-	short				_id;
-	short 			_gCost;
-	nPuzzle 		*_parent;
-	std::string	_defMove;
-	Node 				*_empty;
-	std::vector<std::vector<Node>> _grid;
+	short																	_size;
+	short																	_id;
+	short 																_gCost;
+	nPuzzle 															*_parent;
+	std::string														_defMove;
+	Node 																	*_empty;
+	std::vector<std::vector<Node>>				_grid;
 
 };
 
