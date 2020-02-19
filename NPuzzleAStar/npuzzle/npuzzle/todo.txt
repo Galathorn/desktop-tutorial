@@ -23,6 +23,9 @@ todo:*
 implémenter les différentes classes et instantier les différentes classes pour
 faire des essais et vérifier qu'elles fonctionnent bien et son stables. // globalement CHECK
 
+coder la fonction pour avoir la position de la case vide. CHECK
+coder les mouvements du puzzle CHECK
+
 créer un générateur de npuzzle qui mélange le npuzzle puis qui le resout et qui l'affiche
 
 modifier le main afin de faire la récupération d'argument de manière dynamique et de pouvoir récupérer un npuzzle

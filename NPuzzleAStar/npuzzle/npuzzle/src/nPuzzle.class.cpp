@@ -5,7 +5,7 @@ using namespace std;
 nPuzzle::nPuzzle(short size) : _size(size), _id(0), _gCost(0), _parent(nullptr), _defMove(""), _empty(nullptr)
 {
 	setupGrid(_size);
-	fillClassicGrid();
+	fillSnailGrid();
 }
 
 nPuzzle::nPuzzle(void) : _size(0), _id(0), _gCost(0), _parent(nullptr), _defMove(""), _empty(nullptr)
@@ -23,7 +23,7 @@ void nPuzzle::setupGrid(short size)
 		{
 			_grid[y] = std::vector<Node>(_size);
 				for(short x = 0; x < _size; ++x)
-					_grid[y][x] = Node(0, 0, 0);
+					_grid[y][x] = Node(y, x, 0);
 		}
 }
 
@@ -37,7 +37,7 @@ void nPuzzle::fillClassicGrid()
 		for(short x = 0; x < _size; ++x)
 			if (++current < max)
 				_grid[y][x].setValue( current);
-
+	fillEmpty();
 }
 
 void nPuzzle::fillSnailGrid()
@@ -76,10 +76,76 @@ void nPuzzle::fillSnailGrid()
 				dir = (dir + 1) % directionSize;
 				countDir = size;
 			}
-
 	}
+	fillEmpty();
 }
 
+
+void nPuzzle::fillEmpty()
+{
+	for(short y = 0; y < _size; ++y)
+		for(short x = 0; x < _size; ++x)
+			if (_grid[y][x].getValue() == 0)
+				_empty = &(_grid[y][x]);
+}
+
+void nPuzzle::swapNode(short y, short x, short emptyY, short emptyX)
+{
+		Node tmpNode = _grid[y][x];
+		_grid[y][x] = _grid[emptyY][emptyX];
+		_grid[emptyY][emptyX] = tmpNode;
+
+		Pos tmpPos = Pos(_grid[y][x].getPos().getY(), _grid[y][x].getPos().getX());
+		_grid[y][x].setPos(_grid[emptyY][emptyX].getPos());
+		_grid[emptyY][emptyX].setPos(tmpPos);
+
+		_empty = &(_grid[y][x]); // on redéfinit l'adresse du pointeur sinon ça chie dans la colle.
+}
+
+// movements functions
+
+bool nPuzzle::Up()
+{
+	if (_empty->getPos().getY() + 1 >= _size)
+		return false;
+		cout << "UP" << std::endl;
+		Node n = _grid[_empty->getPos().getY() + 1][_empty->getPos().getX()];
+		swapNode(n.getPos().getY(), n.getPos().getX(), _empty->getPos().getY(), _empty->getPos().getX());
+		return true;
+}
+
+bool nPuzzle::Right()
+{
+	if (_empty->getPos().getX() - 1 < 0)
+		return false;
+		cout << "RIGHT" << std::endl;
+
+		Node n = _grid[_empty->getPos().getY()][_empty->getPos().getX() - 1];
+		swapNode(n.getPos().getY(), n.getPos().getX(), _empty->getPos().getY(), _empty->getPos().getX());
+		return true;
+}
+
+bool nPuzzle::Down()
+{
+	if (_empty->getPos().getY() - 1 < 0)
+		return false;
+		cout << "DOWN" << std::endl;
+
+		Node n = _grid[_empty->getPos().getY() - 1][_empty->getPos().getX()];
+		swapNode(n.getPos().getY(), n.getPos().getX(), _empty->getPos().getY(), _empty->getPos().getX());
+		return true;
+}
+
+bool nPuzzle::Left()
+{
+	if (_empty->getPos().getX() + 1 >= _size)
+		return false;
+		cout << "LEFT" << std::endl;
+
+		Node n = _grid[_empty->getPos().getY()][_empty->getPos().getX() + 1];
+		swapNode(n.getPos().getY(), n.getPos().getX(), _empty->getPos().getY(), _empty->getPos().getX());
+		return true;
+}
 
 // setters and getters
 void nPuzzle::setSize(short size)				{_size = size;}

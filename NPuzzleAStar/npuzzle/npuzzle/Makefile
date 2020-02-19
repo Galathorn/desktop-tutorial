@@ -24,6 +24,7 @@ SRC = main.cpp \
 		Pos.class.cpp \
       	Node.class.cpp \
      	nPuzzle.class.cpp\
+		Scrambler.class.cpp\
 
 OBJ = $(addprefix $(PATH_SRC), $(SRC:.cpp=.o))
 

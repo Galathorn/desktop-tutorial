@@ -42,6 +42,13 @@ class nPuzzle
 	void 																	fillSnailGrid(); // cette fonction va remplir la grille du npuzzle en forme d'escargot
 	void 																	fillClassicGrid(); // cette fonction va remplir la grille du npuzzle en forme d'escargot
 
+	void 																	fillEmpty(); // cette fonction va chercher la case vide dans le puzzle et l'attribuer.
+	void 																	swapNode(short y, short x, short emptyY, short emptyX); // fonction permettant de swapper deux node.
+// movements functions
+	bool 																	Up();
+	bool 																	Right();
+	bool 																	Down();
+	bool 																	Left();
 
 private:
 	short				_size;
