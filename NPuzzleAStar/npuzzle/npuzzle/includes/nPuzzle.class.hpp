@@ -40,8 +40,9 @@ class nPuzzle
 	void 																 	setupGrid(short size); // fonction qui va créer la grille de Node
 
 	void 																	fillSnailGrid(); // cette fonction va remplir la grille du npuzzle en forme d'escargot
+	void 																	fillClassicGrid(); // cette fonction va remplir la grille du npuzzle en forme d'escargot
 
-	
+
 private:
 	short				_size;
 	short				_id;

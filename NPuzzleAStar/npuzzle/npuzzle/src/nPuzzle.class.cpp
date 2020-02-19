@@ -5,7 +5,7 @@ using namespace std;
 nPuzzle::nPuzzle(short size) : _size(size), _id(0), _gCost(0), _parent(nullptr), _defMove(""), _empty(nullptr)
 {
 	setupGrid(_size);
-	fillSnailGrid();
+	fillClassicGrid();
 }
 
 nPuzzle::nPuzzle(void) : _size(0), _id(0), _gCost(0), _parent(nullptr), _defMove(""), _empty(nullptr)
@@ -28,6 +28,17 @@ void nPuzzle::setupGrid(short size)
 }
 
 // major fonction
+
+void nPuzzle::fillClassicGrid()
+{
+	short max = _size * _size;
+	short current = 0;
+	for(short y = 0; y < _size; ++y)
+		for(short x = 0; x < _size; ++x)
+			if (++current < max)
+				_grid[y][x].setValue( current);
+
+}
 
 void nPuzzle::fillSnailGrid()
 {
@@ -93,7 +104,12 @@ std::ostream &operator<<(std::ostream &o, nPuzzle const & ref)
 		for(short y = 0; y < ref.getSize(); ++y)
 		{
 				for(short x = 0; x < ref.getSize(); ++x)
-					o << ref.getGrid()[y][x].getValue() << " ";
+				{
+					std::string s = "   ";
+					s += std::to_string(ref.getGrid()[y][x].getValue());
+					s.resize(5, ' ');
+					o << s;
+				}
 				o << endl;
 		}
 	return o;
