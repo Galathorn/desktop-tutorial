@@ -1,0 +1,31 @@
+cahier des charges :
+5 heuristique possible;
+classique distance de manhattan.
+pythagore
+pythagore + linear colision
+manhattan + linear colision
+hamming distance
+
+le programme doit afficher le nombre de node séléctionné dans la open list.
+
+le maximum de node stocke en memoire dans la closed list et open list;
+
+le nombre de movement executer par le programme pour resoudre le probleme
+
+il doit egalement afficher le bon chemin (duh)
+
+si le puzzle est insoluble, le programme est cense le reconnaitre et le dire.
+
+
+
+todo:*
+
+implémenter les différentes classes et instantier les différentes classes pour
+faire des essais et vérifier qu'elles fonctionnent bien et son stables.
+
+créer un générateur de npuzzle qui mélange le npuzzle puis qui le resout et qui l'affiche
+
+modifier le main afin de faire la récupération d'argument de manière dynamique et de pouvoir récupérer un npuzzle
+en argumet sous forme de fichier texte.
+
+

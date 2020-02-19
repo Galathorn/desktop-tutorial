@@ -1,19 +1,11 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: tguttin <marvin@42.fr>                     +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2020/01/28 18:16:24 by tguttin           #+#    #+#             */
-/*   Updated: 2020/01/28 18:17:30 by tguttin          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include <iostream>
+
+#include "../includes/nPuzzle.class.hpp"
+
+using namespace std;
 
 int main()
 {
-	std::cout << "je suis la fee faggot" << std::endl;
+	cout << "salut sa va " << endl;
 	return 0;
 }
