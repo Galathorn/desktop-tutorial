@@ -6,6 +6,7 @@ using namespace std;
 
 int main()
 {
-	cout << "salut sa va " << endl;
+	nPuzzle puzzle = nPuzzle(5);
+	cout << puzzle << endl;
 	return 0;
 }

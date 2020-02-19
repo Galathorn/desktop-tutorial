@@ -21,7 +21,7 @@ si le puzzle est insoluble, le programme est cense le reconnaitre et le dire.
 todo:*
 
 implémenter les différentes classes et instantier les différentes classes pour
-faire des essais et vérifier qu'elles fonctionnent bien et son stables.
+faire des essais et vérifier qu'elles fonctionnent bien et son stables. // globalement CHECK
 
 créer un générateur de npuzzle qui mélange le npuzzle puis qui le resout et qui l'affiche
 

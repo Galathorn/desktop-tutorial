@@ -11,25 +11,26 @@ class Node
 	Node(short _y, short _x, short _value);
 	~Node(void);
 
-	Node const &operator=(Node const & ref);
+	Node const 	&operator=(Node const & ref);
 
-	float getDistance() const;
+	float 			getDistance() const;
 
-	Pos const &getPos() const;
-	Pos const &getTruePos() const;
+	Pos const 	&getPos() const;
+	Pos const 	&getTruePos() const;
 	short const &getValue() const;
 
-	void setValue(short const &v);
-	void setPos(Pos const & p);
-	void setTruePos(Pos const & p);
+	void 				setValue(short const &v);
+	void 				setPos(Pos const & p);
+	void 				setTruePos(Pos const & p);
 
 
 private:
-	short	_value;
-	Pos		_pos;
-	Pos		_truePos;
+	short				_value;
+	Pos					_pos;
+	Pos					_truePos;
 
 };
+
 std::ostream &operator<<(std::ostream &o, Node const &ref);
 
 #endif

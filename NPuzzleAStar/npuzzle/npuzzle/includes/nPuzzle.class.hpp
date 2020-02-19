@@ -3,7 +3,9 @@
 
 #include <iostream>
 
+using namespace std;
 #include "../includes/Node.class.hpp"
+#include <vector>
 
 class nPuzzle
 {
@@ -12,34 +14,42 @@ class nPuzzle
 	nPuzzle(short size);
 	~nPuzzle();
 
-	nPuzzle 			&operator=(nPuzzle const & ref);
+	nPuzzle 					&operator=(nPuzzle const & ref);
 	// ensemble des methode du cube
 
-	void 				setSize(short &s);
-	short const 		&getSize(void) const;
+	void 																	setSize(short s);
+	short const 													&getSize(void) const;
 
-	void 				setId(short id);
-	short const			&getId(void) const;
+	void 																	setId(short id);
+	short const														&getId(void) const;
 
-	void 				setGcost(short gcost);
-	short const			&getGcost(void) const;
+	void 																	setGcost(short gcost);
+	short const														&getGcost(void) const;
 
-	void 				setParent(nPuzzle *parent);
-	nPuzzle 			*getParent(void) const;
+	void 																	setParent(nPuzzle *parent);
+	nPuzzle 															*getParent(void) const;
 
-	void				setDefMove(std::string defMove);
-	std::string const	&getDefMove(void) const;
+	void																	setDefMove(std::string defMove);
+	std::string const											&getDefMove(void) const;
 
-	void 				setEmpty(Node *n);
-	Node const 			*getEmpty(void) const;
+	void 																	setEmpty(Node *n);
+	Node const 														*getEmpty(void) const;
 
+	std::vector<std::vector<Node>> const 	&getGrid() const;
+
+	void 																 	setupGrid(short size); // fonction qui va créer la grille de Node
+
+	void 																	fillSnailGrid(); // cette fonction va remplir la grille du npuzzle en forme d'escargot
+
+	
 private:
-	short		_size;
-	short		_id;
-	short 		_gCost;
-	nPuzzle 	*_parent;
+	short				_size;
+	short				_id;
+	short 			_gCost;
+	nPuzzle 		*_parent;
 	std::string	_defMove;
-	Node 		*_empty;
+	Node 				*_empty;
+	std::vector<std::vector<Node>> _grid;
 
 };
 
