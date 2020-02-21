@@ -15,6 +15,7 @@ class nPuzzle
 	~nPuzzle();
 
 	nPuzzle 					&operator=(nPuzzle const & ref);
+	bool 							operator==(nPuzzle const &ref);
 	// ensemble des methode du cube
 
 	void 																	setSize(short s);
@@ -50,7 +51,7 @@ class nPuzzle
 
 // cette fonction prend en paramètre une référence vers une grille préexistante et copie chaque élément vers la grille de l'instance en cours.
 	void 																	copyGrid(std::vector<std::vector<Node>> const &grid, short gridSize);
-	bool 																	copyData(nPuzzle &n);
+	bool 																	copyData(nPuzzle *n);
 	nPuzzle																*copy();
 
 

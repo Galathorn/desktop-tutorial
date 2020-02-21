@@ -13,7 +13,7 @@ class Astar : public Algorithm
 	~Astar();
 
 	std::vector<nPuzzle> getNeighboursUsingPool(nPuzzle &current, std::stack<nPuzzle> &pool);
-	std::vector<nPuzzle *> getNeighbours(nPuzzle *current);
+	std::vector<nPuzzle> getNeighbours(nPuzzle *current);
 
 	std::list<std::string> findPath(nPuzzle &puzzle);
 	std::list<std::string> findPathUsingPool(nPuzzle &puzzle, std::stack<nPuzzle> &pool);

@@ -30,9 +30,15 @@ créer un générateur de npuzzle qui mélange le npuzzle  CHECK
 
 créer un ensemble de fonctions permettant l'affichage pratique du puzzle. CHECK 
 
-implémenter la classe environnement qui va stocker la pool de puzzle, le scrambler ainsi que les instances des classes algorithmes.
+implémenter la classe environnement qui va stocker la pool de puzzle, le scrambler ainsi que les instances des classes algorithmes. CHECK
 
-implémenter l'algorithme de résolution.
+implémenter l'algorithme de résolution. CHECK
+
+optimisation possible :
+- tenter la transformations des allocations dynamiques en allocations sur la pile.
+
+- implémenter l'optimisation du parcours de l'open list comme vu dans le tuto de Unity.
+
 
 modifier le main afin de faire la récupération d'argument de manière dynamique et de pouvoir récupérer un npuzzle
 en argumet sous forme de fichier texte.

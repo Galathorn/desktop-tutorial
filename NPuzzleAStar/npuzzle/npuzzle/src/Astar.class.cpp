@@ -15,32 +15,36 @@ Astar::~Astar(void)
 
 // function without pool
 
-std::vector<nPuzzle *> Astar::getNeighbours(nPuzzle * current)
+std::vector<nPuzzle > Astar::getNeighbours(nPuzzle * current)
 {
-		std::vector<nPuzzle *> neighbours = std::vector<nPuzzle *>();
-		nPuzzle *n;
+		std::vector<nPuzzle > neighbours = std::vector<nPuzzle>();
+		nPuzzle n;
 		if (current->getEmpty()->getPos().getY() + 1 < current->getSize())
 		{
-				n = current->copy();
-				n->Up();
+				n = nPuzzle(current->getSize());
+				n = current->copyData(&n);
+				n.Up();
 				neighbours.push_back(n);
 		}
 		if (current->getEmpty()->getPos().getY() - 1 >= 0)
 		{
-				n = current->copy();
-				n->Down();
+				n = nPuzzle(current->getSize());
+				n = current->copyData(&n);
+				n.Down();
 				neighbours.push_back(n);
 		}
 		if (current->getEmpty()->getPos().getX() - 1 >= 0)
 		{
-				n = current->copy();
-				n->Right();
+				n = nPuzzle(current->getSize());
+				n = current->copyData(&n);
+				n.Right();
 				neighbours.push_back(n);
 		}
 		if (current->getEmpty()->getPos().getX() + 1 < current->getSize())
 		{
-				n = current->copy();
-				n->Left();
+				n = nPuzzle(current->getSize());
+				n = current->copyData(&n);
+				n.Left();
 				neighbours.push_back(n);
 		}
 		return neighbours;
@@ -49,47 +53,84 @@ std::vector<nPuzzle *> Astar::getNeighbours(nPuzzle * current)
 std::list<std::string> Astar::findPath(nPuzzle &p)
 {
 		std::list<std::string> path;
-		std::list<nPuzzle *> openSet = std::list<nPuzzle *>();
-		std::list<nPuzzle *> closedSet = std::list<nPuzzle *>();
+		std::list<nPuzzle> openSet = std::list<nPuzzle>();
+		std::list<nPuzzle> closedSet = std::list<nPuzzle>();
 
 		cout << "ASTAR LAUNCH" << endl;
-		openSet.push_back(&p);
+		openSet.push_back(p);
 		int cycle = 0;
 		while (openSet.size() > 0)
 		{
 				cycle++;
 	//			cout << "cycle : " << cycle << endl;
-				nPuzzle *current = *openSet.begin();
-				std::list<nPuzzle *>::iterator it = openSet.begin();
+				std::list<nPuzzle>::iterator current = openSet.begin();
+				std::list<nPuzzle>::iterator it = openSet.begin();
 				++it;
-				std::list<nPuzzle *>::iterator end = openSet.end();
+				std::list<nPuzzle>::iterator end = openSet.end();
 				for (; it != end; ++it)
-					if ((*it)->fCost() < current->fCost() || (*it)->fCost() == current->fCost() && (*it)->getHcost() < current->getHcost())
-							current = (*it);
-				openSet.remove(current);
-				closedSet.push_back(current);
-				if (current->getHcost() <= 0)
+					if ((*it).fCost() < (*current).fCost() || (*it).fCost() == (*current).fCost() && (*it).getHcost() < (*current).getHcost())
+							current = it;
+				closedSet.splice(closedSet.end(), openSet, current);
+				if ((*current).getHcost() <= 0)
 				{
-
 						cout << "path has been found after : [" << cycle << "] cycle" << endl;
-						while (current->getId() > 0)
+						nPuzzle *c = (*current).getParent();
+						if (c == nullptr)
+							return path;
+						path.push_back((*current).getLastMove());
+						while (c->getId() > 0)
 						{
-								cout << current->getLastMove() << endl;
-								current = current->getParent();
+								path.push_back(c->getLastMove());
+								c = c->getParent();
 						}
+						path.reverse();
 						return path;
 				}
-				std::vector<nPuzzle *> neighbours = getNeighbours(current);
+//				std::vector<nPuzzle> neighbours = getNeighbours(&current);
+
+// ici on récupère les voisins manuellement.
+				std::vector<nPuzzle > neighbours = std::vector<nPuzzle>();
+				nPuzzle n;
+				if ((*current).getEmpty()->getPos().getY() + 1 < (*current).getSize())
+				{
+						n = nPuzzle((*current).getSize());
+						(*current).copyData(&n);
+						n.Up();
+						neighbours.push_back(n);
+				}
+				if ((*current).getEmpty()->getPos().getY() - 1 >= 0)
+				{
+						n = nPuzzle((*current).getSize());
+						(*current).copyData(&n);
+						n.Down();
+						neighbours.push_back(n);
+				}
+				if ((*current).getEmpty()->getPos().getX() - 1 >= 0)
+				{
+						n = nPuzzle((*current).getSize());
+						(*current).copyData(&n);
+						n.Right();
+						neighbours.push_back(n);
+				}
+				if ((*current).getEmpty()->getPos().getX() + 1 < (*current).getSize())
+				{
+						n = nPuzzle((*current).getSize());
+						(*current).copyData(&n);
+						n.Left();
+						neighbours.push_back(n);
+				}
 				for (short i = 0; i < neighbours.size(); ++i)
 				{
 						if (std::find(closedSet.begin(), closedSet.end(), neighbours[i]) != closedSet.end())
 								continue;
+
+						neighbours[i].fillEmpty(neighbours[i].getSize());
 						bool contains = std::find(openSet.begin(), openSet.end(), neighbours[i]) == openSet.end() ? false : true;
-						short newMovementCostToNeighbour = current->getGcost() + 1;
-						if (newMovementCostToNeighbour < neighbours[i]->getGcost() || contains == false)
+						short newMovementCostToNeighbour = (*current).getGcost() + 1;
+						if (newMovementCostToNeighbour < neighbours[i].getGcost() || contains == false)
 						{
-									neighbours[i]->setGcost(newMovementCostToNeighbour);
-									neighbours[i]->setParent(current);
+									neighbours[i].setGcost(newMovementCostToNeighbour);
+									neighbours[i].setParent(&(*current));
 									if (contains == false)
 										openSet.push_back(neighbours[i]);
 						}
@@ -104,7 +145,7 @@ std::list<std::string> Astar::findPath(nPuzzle &p)
 				cout << "fcost : " << current->fCost() << endl;
 				while(cin.get() != '\n');
 			}
-			*/
+*/
 		}
 
 

@@ -181,6 +181,8 @@ bool nPuzzle::Left()
 // l'ensemble de la grille plus tard juste pour cela.
 void nPuzzle::copyGrid(std::vector<std::vector<Node>> const &grid, short gridSize)
 {
+	if (_grid.size() == 0)
+		this->setupGrid(gridSize);
 		for (short y = 0; y < gridSize; ++y)
 			for (short x  = 0; x < gridSize; ++x)
 			{
@@ -194,23 +196,23 @@ void nPuzzle::copyGrid(std::vector<std::vector<Node>> const &grid, short gridSiz
 // vers cette référence. Cette fonction sera l'équivalente de la fonction qui renverra une copie égal à l'instance en cours sauf qu'elle ne prend
 // pas de mémoire supplémentaire. Elle permet l'utilisation d'un pooling system de nPuzzle non assigné.
 // Cette fonction ne copie pas tout à fait les bonnes valeurs. Elle modifie tout de même l'ID de l'instance généré pour montrer qu'elle ne sont pas les mêmes.
-bool nPuzzle::copyData(nPuzzle &newPuzzle)
+bool nPuzzle::copyData(nPuzzle *newPuzzle)
 {
-		if (newPuzzle.getSize() > 0 && newPuzzle.getSize() != this->getSize())
+		if (newPuzzle->getSize() > 0 && newPuzzle->getSize() != this->getSize())
 			return false;
-		newPuzzle.setId(_id + 1);
-		newPuzzle.setSize(_size);
-		newPuzzle.setGcost(_gCost);
-		newPuzzle.copyGrid(_grid, _size);
-		newPuzzle.setHcost(_hCost);
+		newPuzzle->setId(_id + 1);
+		newPuzzle->setSize(_size);
+		newPuzzle->setGcost(_gCost);
+		newPuzzle->copyGrid(_grid, _size);
+		newPuzzle->setHcost(_hCost);
 		return true;
 }
 
 nPuzzle *nPuzzle::copy()
 {
 	nPuzzle *copy = new nPuzzle(_size);
-	this->copyData(*copy);
-	copy->fillEmpty(copy->getSize());
+	this->copyData(copy);
+	//copy->fillEmpty(copy->getSize());
 	return copy;
 }
 
@@ -263,6 +265,7 @@ std::vector<std::vector<Node>> const	&nPuzzle::getGrid()					const		{return _gri
 // overload operator
 std::ostream &operator<<(std::ostream &o, nPuzzle const & ref)
 {
+	o << endl;
 		for(short y = 0; y < ref.getSize(); ++y)
 		{
 				for(short x = 0; x < ref.getSize(); ++x)
@@ -274,6 +277,7 @@ std::ostream &operator<<(std::ostream &o, nPuzzle const & ref)
 				}
 				o << endl;
 		}
+		o << endl;
 	return o;
 }
 
@@ -282,4 +286,36 @@ nPuzzle & nPuzzle::operator=(nPuzzle const & src)
 	(void)src;
 	// copy everything
 	return *this;
+}
+
+bool nPuzzle::operator==(nPuzzle const &ref)
+{
+		if (ref.getId() != _id)
+			return false;
+		if (ref.getSize() != _size)
+			return false;
+		if (ref.getGcost() != _gCost)
+			return false;
+		if (ref.getLastMove() != _lastMove)
+			return false;
+		if (ref.getHcost() != _hCost)
+			return false;
+		for (short y = 0; y < _size; ++y)
+			for (short x = 0; x < _size; ++x)
+				{
+						Node _n = _grid[y][x];
+						Node n = ref.getGrid()[y][x];
+						if (n.getPos().getY() != _n.getPos().getY())
+							return false;
+						if (n.getPos().getX() != _n.getPos().getX())
+							return false;
+						if (n.getTruePos().getY() != _n.getTruePos().getY())
+							return false;
+						if (n.getTruePos().getX() != _n.getTruePos().getX())
+							return false;
+						if (n.getValue() != _n.getValue())
+							return false;
+				}
+
+	return true;
 }
