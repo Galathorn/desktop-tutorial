@@ -2,13 +2,13 @@
 
 using namespace std;
 
-nPuzzle::nPuzzle(short size) : _size(size), _id(0), _gCost(0), _parent(nullptr), _defMove(""), _empty(nullptr)
+nPuzzle::nPuzzle(short size) : _size(size), _id(0), _gCost(0), _parent(nullptr), _lastMove(""), _empty(nullptr), _hCost(0.0)
 {
-	setupGrid(_size);
-	fillSnailGrid();
+	this->setupGrid(size);
+	this->fillSnailGrid(size);
 }
 
-nPuzzle::nPuzzle(void) : _size(0), _id(0), _gCost(0), _parent(nullptr), _defMove(""), _empty(nullptr)
+nPuzzle::nPuzzle(void) : _size(0), _id(0), _gCost(0), _parent(nullptr), _lastMove(""), _empty(nullptr),  _hCost(0.0)
 {
 	setupGrid(0);
 }
@@ -17,36 +17,36 @@ nPuzzle::~nPuzzle(void) {}
 
 void nPuzzle::setupGrid(short size)
 {
-	_grid = std::vector<std::vector<Node>>(_size);
-		for(short y = 0; y < _size; ++y)
+		_grid = std::vector<std::vector<Node>>(size);
+		for(short y = 0; y < size; ++y)
 		{
-			_grid[y] = std::vector<Node>(_size);
-				for(short x = 0; x < _size; ++x)
+			_grid[y] = std::vector<Node>(size);
+				for(short x = 0; x < size; ++x)
 					_grid[y][x] = Node(y, x, 0);
 		}
 }
 
 // major fonction
 
-void nPuzzle::fillClassicGrid()
+void nPuzzle::fillClassicGrid(short mSize)
 {
-	short max = _size * _size;
+	short max = mSize * mSize;
 	short current = 0;
-	for(short y = 0; y < _size; ++y)
-		for(short x = 0; x < _size; ++x)
+	for(short y = 0; y < mSize; ++y)
+		for(short x = 0; x < mSize; ++x)
 			if (++current < max)
 				_grid[y][x].setValue( current);
-	fillEmpty();
+	this->fillEmpty(mSize);
 }
 
-void nPuzzle::fillSnailGrid()
+void nPuzzle::fillSnailGrid(short mSize)
 {
-	short size = _size;
-	short goalValue = _size * _size;
+	short size = mSize;
+	short goalValue = mSize * mSize;
 	std::vector<std::string> directions = {"RIGHT","DOWN","LEFT","UP"};
 	short directionSize = 4;
 	short dir = 0;
-	short countDir = _size;
+	short countDir = mSize;
 	short count = 0;
 	short y = 0;
 	short x = 0;
@@ -76,20 +76,40 @@ void nPuzzle::fillSnailGrid()
 				countDir = size;
 			}
 	}
-	fillEmpty();
+	this->fillEmpty(mSize);
 }
 
 
-void nPuzzle::fillEmpty()
+void nPuzzle::fillEmpty(short mSize)
 {
-	for(short y = 0; y < _size; ++y)
-		for(short x = 0; x < _size; ++x)
-			if (_grid[y][x].getValue() == 0)
-				_empty = &(_grid[y][x]);
+	for (short y = 0; y < mSize; ++y)
+		for (short x = 0; x < mSize; ++x)
+		{
+				if (_grid[y][x].getValue() == 0)
+				{
+						this->setEmpty( &(_grid[y][x]) );
+						return ;
+				}
+		}
+}
+
+// cette fonctin va réduire la valeur de hCost en fonction de la distance en cours de la node envoyé en paramètre.
+float nPuzzle::reduceHcost(Node const &n)
+{
+	_hCost -= n.pythagoras();
+	return _hCost;
+}
+
+float nPuzzle::increaseHcost(Node const &n)
+{
+	_hCost += n.pythagoras();
+	return _hCost;
 }
 
 void nPuzzle::swapNode(short y, short x, short emptyY, short emptyX)
 {
+//		reduceHcost(_grid[y][x]);
+//		reduceHcost(_grid[emptyY][emptyX]);
 		Node tmpNode = _grid[y][x];
 		_grid[y][x] = _grid[emptyY][emptyX];
 		_grid[emptyY][emptyX] = tmpNode;
@@ -99,6 +119,10 @@ void nPuzzle::swapNode(short y, short x, short emptyY, short emptyX)
 		_grid[emptyY][emptyX].setPos(tmpPos);
 
 		_empty = &(_grid[y][x]); // on redéfinit l'adresse du pointeur sinon ça chie dans la colle.
+//		increaseHcost(_grid[y][x]);
+//		increaseHcost(_grid[emptyY][emptyX]);
+//		this->setHcost(this->getPythagoras()); // on recalcule tout l'heuristique a chaque deplacement.
+		this->setHcost(this->getManhattan()); // on recalcule tout l'heuristique a chaque deplacement.
 }
 
 // movements functions
@@ -110,6 +134,7 @@ bool nPuzzle::Up()
 		//cout << "UP" << std::endl;
 		Node n = _grid[_empty->getPos().getY() + 1][_empty->getPos().getX()];
 		swapNode(n.getPos().getY(), n.getPos().getX(), _empty->getPos().getY(), _empty->getPos().getX());
+		_lastMove = "UP";
 		return true;
 }
 
@@ -121,6 +146,7 @@ bool nPuzzle::Right()
 
 		Node n = _grid[_empty->getPos().getY()][_empty->getPos().getX() - 1];
 		swapNode(n.getPos().getY(), n.getPos().getX(), _empty->getPos().getY(), _empty->getPos().getX());
+		_lastMove = "RIGHT";
 		return true;
 }
 
@@ -132,6 +158,7 @@ bool nPuzzle::Down()
 
 		Node n = _grid[_empty->getPos().getY() - 1][_empty->getPos().getX()];
 		swapNode(n.getPos().getY(), n.getPos().getX(), _empty->getPos().getY(), _empty->getPos().getX());
+		_lastMove = "DOWN";
 		return true;
 }
 
@@ -143,6 +170,7 @@ bool nPuzzle::Left()
 
 		Node n = _grid[_empty->getPos().getY()][_empty->getPos().getX() + 1];
 		swapNode(n.getPos().getY(), n.getPos().getX(), _empty->getPos().getY(), _empty->getPos().getX());
+		_lastMove = "LEFT";
 		return true;
 }
 
@@ -153,8 +181,8 @@ bool nPuzzle::Left()
 // l'ensemble de la grille plus tard juste pour cela.
 void nPuzzle::copyGrid(std::vector<std::vector<Node>> const &grid, short gridSize)
 {
-		for(short y = 0; y < gridSize; ++y)
-			for(short x  = 0; x < gridSize; ++x)
+		for (short y = 0; y < gridSize; ++y)
+			for (short x  = 0; x < gridSize; ++x)
 			{
 					_grid[y][x] = grid[y][x];
 					if (_grid[y][x].getValue() == 0)
@@ -174,23 +202,61 @@ bool nPuzzle::copyData(nPuzzle &newPuzzle)
 		newPuzzle.setSize(_size);
 		newPuzzle.setGcost(_gCost);
 		newPuzzle.copyGrid(_grid, _size);
+		newPuzzle.setHcost(_hCost);
 		return true;
+}
+
+nPuzzle *nPuzzle::copy()
+{
+	nPuzzle *copy = new nPuzzle(_size);
+	this->copyData(*copy);
+	copy->fillEmpty(copy->getSize());
+	return copy;
+}
+
+// toutes les fonctions heuristiques.
+
+// cette fonction va parcourir l'ensemble des éléments de la grille et récupérer la valeur de retour de la fonction pythagore
+// la somme de toute ces valeurs va donner une heuristiques qu'utilisera l'algorithme afin de déterminer ses futurs choix.
+float nPuzzle::getPythagoras() const
+{
+	float hCost = 0.0;
+	for(short y = 0; y < _size; ++y)
+		for(short x = 0; x < _size; ++x)
+				hCost += _grid[y][x].pythagoras();
+		return hCost;
+}
+
+short nPuzzle::getManhattan() const
+{
+	short hCost = 0;
+	for(short y = 0; y < _size; ++y)
+		for(short x = 0; x < _size; ++x)
+				hCost += _grid[y][x].manhattan();
+		return hCost;
+}
+
+float nPuzzle::fCost()
+{
+	return _gCost + _hCost;
 }
 
 // setters and getters
 void nPuzzle::setSize(short size)				{_size = size;}
 void nPuzzle::setId(short id)						{_id = id;}
 void nPuzzle::setGcost(short g)					{_gCost = g;}
+void nPuzzle::setHcost(float h)					{_hCost = h;}
 void nPuzzle::setParent(nPuzzle *p)			{_parent = p;}
-void nPuzzle::setDefMove(std::string s)	{_defMove = s;}
+void nPuzzle::setLastMove(std::string s)	{_lastMove = s;}
 void nPuzzle::setEmpty(Node *n) 				{_empty = n;}
 
 short const 													&nPuzzle::getSize(void)			const		{return _size;}
 short const														&nPuzzle::getId(void)				const		{return _id;}
 short const														&nPuzzle::getGcost(void)		const		{return _gCost;}
+float const														&nPuzzle::getHcost(void)		const		{return _hCost;}
 nPuzzle 															*nPuzzle::getParent(void)		const		{return _parent;}
-std::string const											&nPuzzle::getDefMove(void)	const		{return _defMove;}
-Node const 														*nPuzzle::getEmpty(void)		const		{return _empty;}
+std::string const											&nPuzzle::getLastMove(void)	const		{return _lastMove;}
+Node			 														*nPuzzle::getEmpty(void)		const		{return _empty;}
 std::vector<std::vector<Node>> const	&nPuzzle::getGrid()					const		{return _grid;}
 
 

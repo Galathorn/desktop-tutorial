@@ -13,7 +13,8 @@ class Node
 
 	Node const 	&operator=(Node const & ref);
 
-	float 			getDistance() const;
+	float 			pythagoras()	const;
+	short 			manhattan() 	const;
 
 	Pos const 	&getPos() const;
 	Pos const 	&getTruePos() const;

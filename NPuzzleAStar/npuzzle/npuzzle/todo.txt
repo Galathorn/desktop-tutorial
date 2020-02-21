@@ -26,7 +26,13 @@ faire des essais et vérifier qu'elles fonctionnent bien et son stables. // glob
 coder la fonction pour avoir la position de la case vide. CHECK
 coder les mouvements du puzzle CHECK
 
-créer un générateur de npuzzle qui mélange le npuzzle puis qui le resout et qui l'affiche
+créer un générateur de npuzzle qui mélange le npuzzle  CHECK
+
+créer un ensemble de fonctions permettant l'affichage pratique du puzzle. CHECK 
+
+implémenter la classe environnement qui va stocker la pool de puzzle, le scrambler ainsi que les instances des classes algorithmes.
+
+implémenter l'algorithme de résolution.
 
 modifier le main afin de faire la récupération d'argument de manière dynamique et de pouvoir récupérer un npuzzle
 en argumet sous forme de fichier texte.

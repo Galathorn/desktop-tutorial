@@ -4,6 +4,7 @@
 #include "./Algorithm.class.hpp"
 #include "./nPuzzle.class.hpp"
 #include <list>
+#include <stack>
 
 class Astar : public Algorithm
 {
@@ -11,7 +12,11 @@ class Astar : public Algorithm
 	Astar();
 	~Astar();
 
-	std::list<std::string> findPath(nPuzzle puzzle);
+	std::vector<nPuzzle> getNeighboursUsingPool(nPuzzle &current, std::stack<nPuzzle> &pool);
+	std::vector<nPuzzle *> getNeighbours(nPuzzle *current);
+
+	std::list<std::string> findPath(nPuzzle &puzzle);
+	std::list<std::string> findPathUsingPool(nPuzzle &puzzle, std::stack<nPuzzle> &pool);
 };
 
 

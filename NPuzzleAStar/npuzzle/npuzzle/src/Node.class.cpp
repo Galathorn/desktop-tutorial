@@ -15,7 +15,7 @@ Node::Node(short y, short x, short value) : _value(value)
 Node::~Node() {}
 
 
-float Node::getDistance() const
+float Node::pythagoras() const
 {
   float x = _truePos.getX() - _pos.getX();
   float y = _truePos.getY() - _pos.getY();
@@ -24,6 +24,10 @@ float Node::getDistance() const
   return static_cast<float>(sqrt(x + y));
 }
 
+short Node::manhattan() const
+{
+  return ( std::abs(_truePos.getX() - _pos.getX()) + std::abs(_truePos.getY() - _pos.getY()) );
+}
 //getter and setter
 
 void Node::setValue(short const &v) {_value = v;}

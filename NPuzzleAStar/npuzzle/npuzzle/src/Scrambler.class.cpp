@@ -27,8 +27,11 @@ void Scrambler::scramble(short n, nPuzzle &puzzle)
 {
   std::string m = _moves[rand() % _moves.size()];
   short       v = 0;
+  short counterFail = 0;
+  short limitFail = 50;
   for (short i = 0; i < n; ++i)
   {
+      counterFail = 0;
       while (true)
       {
         if (lastMove == "UP")
@@ -41,6 +44,8 @@ void Scrambler::scramble(short n, nPuzzle &puzzle)
           m = _noLeft[rand() % _noLeft.size()];
           if (applyMove(m, puzzle) == true)
             break;
+          if (counterFail++ == 50)
+              break;
       }
       lastMove = m;
   }
