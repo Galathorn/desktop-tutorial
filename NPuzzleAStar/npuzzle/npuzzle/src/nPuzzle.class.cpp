@@ -225,7 +225,8 @@ float nPuzzle::getPythagoras() const
 	float hCost = 0.0;
 	for(short y = 0; y < _size; ++y)
 		for(short x = 0; x < _size; ++x)
-				hCost += _grid[y][x].pythagoras();
+				if (_grid[y][x].getValue() != 0)
+					hCost += _grid[y][x].pythagoras();
 		return hCost;
 }
 
@@ -234,6 +235,7 @@ short nPuzzle::getManhattan() const
 	short hCost = 0;
 	for(short y = 0; y < _size; ++y)
 		for(short x = 0; x < _size; ++x)
+			if (_grid[y][x].getValue() != 0)
 				hCost += _grid[y][x].manhattan();
 		return hCost;
 }
@@ -271,7 +273,10 @@ std::ostream &operator<<(std::ostream &o, nPuzzle const & ref)
 				for(short x = 0; x < ref.getSize(); ++x)
 				{
 					std::string s = "   ";
-					s += std::to_string(ref.getGrid()[y][x].getValue());
+					if (ref.getGrid()[y][x].getValue() == 0)
+						s += " ";
+					else
+						s += std::to_string( ref.getGrid()[y][x].getValue() );
 					s.resize(5, ' ');
 					o << s;
 				}

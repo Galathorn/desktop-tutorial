@@ -3,6 +3,7 @@
 #include "../includes/nPuzzle.class.hpp"
 #include "../includes/Scrambler.class.hpp"
 #include "../includes/Environment.class.hpp"
+#include <unistd.h>
 
 using namespace std;
 #define KEY_UP 72
@@ -47,8 +48,8 @@ void dealInput(Environment &env)
 				env.puzzle.Left();
 
 			system ("/bin/stty cooked");
-
 			cout << "\033[" << env.puzzle.getSize() + 3 << "A";
+//			cout << "hCost : " << env.puzzle.getHcost() << endl;
 			cout << env.puzzle << endl;
 			system ("/bin/stty raw");
 	}
@@ -59,25 +60,56 @@ void dealInput(Environment &env)
 
 int main()
 {
+	std::list<std::string> path;
 	Environment env = Environment(3, 0);
 	printNpuzzle(env.puzzle);
-	env.scrambler.scramble(0, env.puzzle);
+	env.scrambler.scramble(50, env.puzzle);
 	cout << env.puzzle << endl;
-	dealInput(env);
-
-	std::list<std::string> path = env.astar.findPath(env.puzzle);
-	std::list<std::string>::iterator it = path.begin();
-	std::list<std::string>::iterator end = path.end();
-	while (it != end )
+	bool once = false;
+	while (once == false || env.puzzle.getHcost() != 0)
 	{
-		cout << *it << endl;
-		it++;
+			once = true;
+			dealInput(env);
+			path = env.astar.findPath(env.puzzle);
+			std::list<std::string>::iterator it = path.begin();
+			std::list<std::string>::iterator end = path.end();
+			cout << endl;
+			while (it != end )
+			{
+				cout << *it << endl;
+				it++;
+			}
+			cout << endl;
+			cout << env.puzzle << endl;
+			if (path.size() != 0)
+				break;
 	}
+	for(int i = 0; i < env.puzzle.getSize() + 3; ++i)
+		cout << endl;
+	std::list<string>::iterator it = path.begin();
+	std::list<string>::iterator end = path.end();
+	for(;it != end; ++it)
+	{
+		if (*it == "UP")
+			env.puzzle.Up();
+		if (*it == "DOWN")
+			env.puzzle.Down();
+		if (*it == "RIGHT")
+			env.puzzle.Right();
+		if (*it == "LEFT")
+			env.puzzle.Left();
+		cout << "\033[" << env.puzzle.getSize() + 4 << "A";
+		for(int i = 0; i < env.puzzle.getSize() + 4; ++i)
+			cout << "                                       " << endl;
 
+		cout << "\033[" << env.puzzle.getSize() + 4 << "A";
+		cout << "last move : " << *it << endl;
 		cout << env.puzzle << endl;
+		usleep(1000000);
 
-	dealInput(env);
 
-
+	}
+	cout << "\033[" << (env.puzzle.getSize()) * 2  << "A";
+	cout << env.puzzle << endl;
 	return 0;
 }

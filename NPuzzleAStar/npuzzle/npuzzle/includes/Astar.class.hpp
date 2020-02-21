@@ -14,6 +14,8 @@ class Astar : public Algorithm
 
 	std::vector<nPuzzle> getNeighboursUsingPool(nPuzzle &current, std::stack<nPuzzle> &pool);
 	std::vector<nPuzzle> getNeighbours(nPuzzle *current);
+	bool 									isMovementOpposite(std::string const &currentMove, std::string const &lastMove);
+
 
 	std::list<std::string> findPath(nPuzzle &puzzle);
 	std::list<std::string> findPathUsingPool(nPuzzle &puzzle, std::stack<nPuzzle> &pool);

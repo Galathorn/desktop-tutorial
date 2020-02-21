@@ -52,6 +52,7 @@ std::vector<nPuzzle > Astar::getNeighbours(nPuzzle * current)
 
 std::list<std::string> Astar::findPath(nPuzzle &p)
 {
+		p.setLastMove("");
 		std::list<std::string> path;
 		std::list<nPuzzle> openSet = std::list<nPuzzle>();
 		std::list<nPuzzle> closedSet = std::list<nPuzzle>();
@@ -59,7 +60,11 @@ std::list<std::string> Astar::findPath(nPuzzle &p)
 		cout << "ASTAR LAUNCH" << endl;
 		openSet.push_back(p);
 		int cycle = 0;
-		while (openSet.size() > 0)
+		cout << p << endl;
+		cout << "hcost :" << p.getHcost() << endl;
+		cout << "gcost :" << p.getGcost() << endl;
+		cout << "fcost :" << p.fCost() << endl;
+ 		while (openSet.size() > 0)
 		{
 				cycle++;
 	//			cout << "cycle : " << cycle << endl;
@@ -68,8 +73,14 @@ std::list<std::string> Astar::findPath(nPuzzle &p)
 				++it;
 				std::list<nPuzzle>::iterator end = openSet.end();
 				for (; it != end; ++it)
-					if ((*it).fCost() < (*current).fCost() || (*it).fCost() == (*current).fCost() && (*it).getHcost() < (*current).getHcost())
+					if ((*it).fCost() < (*current).fCost() || ((*it).fCost() == (*current).fCost() && (*it).getHcost() < (*current).getHcost()))
 							current = it;
+/*
+				cout << *current << endl;
+				cout << "hcost :" << (*current).getHcost() << endl;
+				cout << "gcost :" << (*current).getGcost() << endl;
+				cout << "fcost :" << (*current).fCost() << endl;
+*/
 				closedSet.splice(closedSet.end(), openSet, current);
 				if ((*current).getHcost() <= 0)
 				{
@@ -91,28 +102,38 @@ std::list<std::string> Astar::findPath(nPuzzle &p)
 // ici on récupère les voisins manuellement.
 				std::vector<nPuzzle > neighbours = std::vector<nPuzzle>();
 				nPuzzle n;
+/*
 				if ((*current).getEmpty()->getPos().getY() + 1 < (*current).getSize())
+					cout << "Up possible" << endl;
+				if ((*current).getEmpty()->getPos().getY() - 1 >= 0)
+					cout << "Down possible" << endl;
+				if ((*current).getEmpty()->getPos().getX() - 1 >= 0)
+					cout << "Right possible" << endl;
+				if ((*current).getEmpty()->getPos().getX() + 1 < (*current).getSize())
+					cout << "Left possible" << endl;
+*/
+				if ((*current).getEmpty()->getPos().getY() + 1 < (*current).getSize() && isMovementOpposite("UP", (*current).getLastMove()) == false)
 				{
 						n = nPuzzle((*current).getSize());
 						(*current).copyData(&n);
 						n.Up();
 						neighbours.push_back(n);
 				}
-				if ((*current).getEmpty()->getPos().getY() - 1 >= 0)
+				if ((*current).getEmpty()->getPos().getY() - 1 >= 0 && isMovementOpposite("DOWN", (*current).getLastMove()) == false)
 				{
 						n = nPuzzle((*current).getSize());
 						(*current).copyData(&n);
 						n.Down();
 						neighbours.push_back(n);
 				}
-				if ((*current).getEmpty()->getPos().getX() - 1 >= 0)
+				if ((*current).getEmpty()->getPos().getX() - 1 >= 0 && isMovementOpposite("RIGHT", (*current).getLastMove()) == false)
 				{
 						n = nPuzzle((*current).getSize());
 						(*current).copyData(&n);
 						n.Right();
 						neighbours.push_back(n);
 				}
-				if ((*current).getEmpty()->getPos().getX() + 1 < (*current).getSize())
+				if ((*current).getEmpty()->getPos().getX() + 1 < (*current).getSize() && isMovementOpposite("LEFT", (*current).getLastMove()) == false)
 				{
 						n = nPuzzle((*current).getSize());
 						(*current).copyData(&n);
@@ -123,7 +144,12 @@ std::list<std::string> Astar::findPath(nPuzzle &p)
 				{
 						if (std::find(closedSet.begin(), closedSet.end(), neighbours[i]) != closedSet.end())
 								continue;
-
+						neighbours[i].fillEmpty(neighbours[i].getSize());
+/*						cout << endl;
+						cout << "neighbours[" << i << "].Hcost : " << neighbours[i].getHcost() << " move : " << neighbours[i].getLastMove() << endl;
+						cout << "empty value : " << *(neighbours[i].getEmpty()) << endl;
+						cout << neighbours[i] << endl;
+*/
 						neighbours[i].fillEmpty(neighbours[i].getSize());
 						bool contains = std::find(openSet.begin(), openSet.end(), neighbours[i]) == openSet.end() ? false : true;
 						short newMovementCostToNeighbour = (*current).getGcost() + 1;
@@ -152,6 +178,23 @@ std::list<std::string> Astar::findPath(nPuzzle &p)
 
 
 		return path;
+}
+
+bool Astar::isMovementOpposite(std::string const &currentMove, std::string const &lastMove)
+{
+//		cout << "currentMove : " << currentMove << " lastMove : " << lastMove << endl;
+		if ((lastMove == "UP" && currentMove == "DOWN") || (lastMove == "DOWN" && currentMove == "UP"))
+		{
+//			cout << "OPPOSITE with UP and DOWN are true" << endl;
+
+			return true;
+		}
+		if ( (lastMove == "RIGHT" && currentMove == "LEFT") || (lastMove == "LEFT" && currentMove == "RIGHT"))
+		{
+	//			cout << "OPPOSITE with RIGHT and LEFT are true" << endl;
+			return true;
+		}
+		return false;
 }
 
 // functions using pool
