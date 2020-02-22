@@ -35,9 +35,18 @@ implémenter la classe environnement qui va stocker la pool de puzzle, le scramb
 implémenter l'algorithme de résolution. CHECK
 
 optimisation possible :
-- tenter la transformations des allocations dynamiques en allocations sur la pile.
+- tenter la transformations des allocations dynamiques en allocations sur la pile. CHECK
+- implémenter l'optimisation du parcours de l'open list comme vu dans le tuto de Unity. IMPOSSIBLE
 
-- implémenter l'optimisation du parcours de l'open list comme vu dans le tuto de Unity.
+- trier la open list au fur et a mesure comme cela, lorsque l'on va la parcourir, vu qu'elle sera deja trier, eh bien cela sera facile de ne pas la parourir en entier.
+{
+	plan : 
+	la classe devra avoir un iterator little qui contiendra l'index vers la plus petite valeurs de la liste, la classe possedera les methodes suivantes :
+	- Add(nPuzzle &puzzle) : la methode add prendra en parametre une rerefence vers une instance de nPuzzle possible. elle l'ajoutera a la liste et checkera si jamais
+		cette instance correspond a la plus petite valeur . Si jamais c'est le cas, le pointeur little pointera vers cette element.
+
+	-getLittle() -> get little renverra 
+}
 
 
 modifier le main afin de faire la récupération d'argument de manière dynamique et de pouvoir récupérer un npuzzle

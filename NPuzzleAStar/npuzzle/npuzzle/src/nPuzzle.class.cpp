@@ -5,7 +5,8 @@ using namespace std;
 nPuzzle::nPuzzle(short size) : _size(size), _id(0), _gCost(0), _parent(nullptr), _lastMove(""), _empty(nullptr), _hCost(0.0)
 {
 	this->setupGrid(size);
-	this->fillSnailGrid(size);
+//	this->fillSnailGrid(size);
+	this->fillClassicGrid(size);
 }
 
 nPuzzle::nPuzzle(void) : _size(0), _id(0), _gCost(0), _parent(nullptr), _lastMove(""), _empty(nullptr),  _hCost(0.0)

@@ -33,23 +33,26 @@ void dealInput(Environment &env)
 {
 	char c;
 	system ("/bin/stty raw");
-
+	int amount = 0;
 	while(c = std::getchar())
 	{
 			if (c == 'e')
 				break;
-			else if (c == 'z')
+			else if (c == 'z' && ++amount)
 				env.puzzle.Up();
-			else if (c == 's')
+			else if (c == 's' && ++amount)
 				env.puzzle.Down();
-			else if (c == 'd')
+			else if (c == 'd' && ++amount)
 				env.puzzle.Right();
-			else if (c == 'q')
+			else if (c == 'q' && ++amount)
 				env.puzzle.Left();
+			else if (c == 'r' && ++amount)
+				env.scrambler.scramble(1, env.puzzle);
 
 			system ("/bin/stty cooked");
-			cout << "\033[" << env.puzzle.getSize() + 3 << "A";
-//			cout << "hCost : " << env.puzzle.getHcost() << endl;
+			cout << endl << "\033[" << env.puzzle.getSize() + 6 << "A";
+			cout << "puzzle state modified by [" << amount << "] moves" << endl;
+			cout << "hCost : " << env.puzzle.getHcost() << endl;
 			cout << env.puzzle << endl;
 			system ("/bin/stty raw");
 	}
@@ -60,10 +63,13 @@ void dealInput(Environment &env)
 
 int main()
 {
+	int maxScramble = 1000;
 	std::list<std::string> path;
 	Environment env = Environment(3, 0);
 	printNpuzzle(env.puzzle);
-	env.scrambler.scramble(50, env.puzzle);
+	cout << endl << endl;
+	cout << "puzzle state modified by [0] moves" << endl;
+	cout << "hCost : " << env.puzzle.getHcost() << endl;
 	cout << env.puzzle << endl;
 	bool once = false;
 	while (once == false || env.puzzle.getHcost() != 0)
@@ -105,11 +111,15 @@ int main()
 		cout << "\033[" << env.puzzle.getSize() + 4 << "A";
 		cout << "last move : " << *it << endl;
 		cout << env.puzzle << endl;
-		usleep(1000000);
+		system ("/bin/stty raw");
+
+		while(std::getchar() != 'e');
+		system ("/bin/stty cooked");
+		//usleep(1000000);
 
 
 	}
-	cout << "\033[" << (env.puzzle.getSize()) * 2  << "A";
+	cout << "\033[" << (env.puzzle.getSize()) + 3  << "A";
 	cout << env.puzzle << endl;
 	return 0;
 }

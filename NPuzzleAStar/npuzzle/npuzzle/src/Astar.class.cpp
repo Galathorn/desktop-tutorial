@@ -60,11 +60,11 @@ std::list<std::string> Astar::findPath(nPuzzle &p)
 		cout << "ASTAR LAUNCH" << endl;
 		openSet.push_back(p);
 		int cycle = 0;
-		cout << p << endl;
+	/*	cout << p << endl;
 		cout << "hcost :" << p.getHcost() << endl;
 		cout << "gcost :" << p.getGcost() << endl;
 		cout << "fcost :" << p.fCost() << endl;
- 		while (openSet.size() > 0)
+ 		*/while (openSet.size() > 0)
 		{
 				cycle++;
 	//			cout << "cycle : " << cycle << endl;
@@ -77,11 +77,14 @@ std::list<std::string> Astar::findPath(nPuzzle &p)
 							current = it;
 /*
 				cout << *current << endl;
-				cout << "hcost :" << (*current).getHcost() << endl;
-				cout << "gcost :" << (*current).getGcost() << endl;
-				cout << "fcost :" << (*current).fCost() << endl;
+				cout << "lastMove :" << (*current).getLastMove() << endl;
+				cout << "empty value : " << *(*current).getEmpty() << endl;
+				cout << "hcost    :" << (*current).getHcost() << endl;
+				cout << "gcost    :" << (*current).getGcost() << endl;
+				cout << "fcost    :" << (*current).fCost() << endl;
 */
 				closedSet.splice(closedSet.end(), openSet, current);
+				(*current).fillEmpty((*current).getSize());
 				if ((*current).getHcost() <= 0)
 				{
 						cout << "path has been found after : [" << cycle << "] cycle" << endl;
@@ -91,6 +94,8 @@ std::list<std::string> Astar::findPath(nPuzzle &p)
 						path.push_back((*current).getLastMove());
 						while (c->getId() > 0)
 						{
+								cout << "move : " << c->getLastMove() << endl;
+								cout  << *c << endl;
 								path.push_back(c->getLastMove());
 								c = c->getParent();
 						}
@@ -101,6 +106,7 @@ std::list<std::string> Astar::findPath(nPuzzle &p)
 
 // ici on récupère les voisins manuellement.
 				std::vector<nPuzzle > neighbours = std::vector<nPuzzle>();
+//				cout << "neigbours size before search : " << neighbours.size() << endl;
 				nPuzzle n;
 /*
 				if ((*current).getEmpty()->getPos().getY() + 1 < (*current).getSize())
@@ -145,7 +151,7 @@ std::list<std::string> Astar::findPath(nPuzzle &p)
 						if (std::find(closedSet.begin(), closedSet.end(), neighbours[i]) != closedSet.end())
 								continue;
 						neighbours[i].fillEmpty(neighbours[i].getSize());
-/*						cout << endl;
+	/*					cout << endl;
 						cout << "neighbours[" << i << "].Hcost : " << neighbours[i].getHcost() << " move : " << neighbours[i].getLastMove() << endl;
 						cout << "empty value : " << *(neighbours[i].getEmpty()) << endl;
 						cout << neighbours[i] << endl;
@@ -161,6 +167,11 @@ std::list<std::string> Astar::findPath(nPuzzle &p)
 										openSet.push_back(neighbours[i]);
 						}
 				}
+	/*			system ("/bin/stty raw");
+				while(std::getchar() != 'e');
+				system ("/bin/stty cooked");
+*///				if (cycle == 2)
+//					return path;
 /*
 				if (current->getHcost() <= 2)
 				{
