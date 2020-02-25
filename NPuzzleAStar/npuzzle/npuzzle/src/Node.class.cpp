@@ -26,7 +26,8 @@ float Node::pythagoras() const
 
 short Node::manhattan() const
 {
-  return ( std::abs(_truePos.getX() - _pos.getX()) + std::abs(_truePos.getY() - _pos.getY()) );
+  short val = std::abs(_truePos.getX() - _pos.getX()) + std::abs(_truePos.getY() - _pos.getY());
+  return ( val * val );
 }
 //getter and setter
 

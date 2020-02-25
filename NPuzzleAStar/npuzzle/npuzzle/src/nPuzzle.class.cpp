@@ -109,8 +109,6 @@ float nPuzzle::increaseHcost(Node const &n)
 
 void nPuzzle::swapNode(short y, short x, short emptyY, short emptyX)
 {
-//		reduceHcost(_grid[y][x]);
-//		reduceHcost(_grid[emptyY][emptyX]);
 		Node tmpNode = _grid[y][x];
 		_grid[y][x] = _grid[emptyY][emptyX];
 		_grid[emptyY][emptyX] = tmpNode;
@@ -120,10 +118,9 @@ void nPuzzle::swapNode(short y, short x, short emptyY, short emptyX)
 		_grid[emptyY][emptyX].setPos(tmpPos);
 
 		_empty = &(_grid[y][x]); // on redéfinit l'adresse du pointeur sinon ça chie dans la colle.
-//		increaseHcost(_grid[y][x]);
-//		increaseHcost(_grid[emptyY][emptyX]);
 //		this->setHcost(this->getPythagoras()); // on recalcule tout l'heuristique a chaque deplacement.
-		this->setHcost(this->getManhattan()); // on recalcule tout l'heuristique a chaque deplacement.
+//		this->setHcost(this->getManhattan()); // on recalcule tout l'heuristique a chaque deplacement.
+		this->setHcost(this->getManhattanAndLinearConflict()); // on recalcule tout l'heuristique a chaque deplacement.
 }
 
 // movements functions
@@ -197,7 +194,7 @@ void nPuzzle::copyGrid(std::vector<std::vector<Node>> const &grid, short gridSiz
 // vers cette référence. Cette fonction sera l'équivalente de la fonction qui renverra une copie égal à l'instance en cours sauf qu'elle ne prend
 // pas de mémoire supplémentaire. Elle permet l'utilisation d'un pooling system de nPuzzle non assigné.
 // Cette fonction ne copie pas tout à fait les bonnes valeurs. Elle modifie tout de même l'ID de l'instance généré pour montrer qu'elle ne sont pas les mêmes.
-bool nPuzzle::copyData(nPuzzle *newPuzzle)
+bool nPuzzle::copyData(nPuzzle *newPuzzle) const
 {
 		if (newPuzzle->getSize() > 0 && newPuzzle->getSize() != this->getSize())
 			return false;
@@ -209,7 +206,7 @@ bool nPuzzle::copyData(nPuzzle *newPuzzle)
 		return true;
 }
 
-nPuzzle *nPuzzle::copy()
+nPuzzle *nPuzzle::copy() const
 {
 	nPuzzle *copy = new nPuzzle(_size);
 	this->copyData(copy);
@@ -241,7 +238,86 @@ short nPuzzle::getManhattan() const
 		return hCost;
 }
 
-float nPuzzle::fCost()
+bool nPuzzle::isLinearConflicted(Node const &node) const
+{
+	Node dest = _grid[node.getTruePos().getY()][node.getTruePos().getX()];
+	short destY = dest.getPos().getY();
+	short destX = dest.getPos().getX();
+	for (short x = 0; x < _size; ++x)
+	{
+		Node current = _grid[node.getPos().getY()][x];
+				if (current.getValue() != 0 && x != node.getPos().getX())
+					{
+							if (current.getTruePos().getY() == node.getTruePos().getY())
+								{
+									if (current.getPos().getX() < node.getPos().getX() && current.getPos().getX() > destX ||
+											current.getPos().getX() > node.getPos().getX() && current.getPos().getX() < destX)
+											{
+						//					std::cout << "linear conflict for node : " << node.getValue() << " with : " << current.getValue() << " on all X with getTruePos Y equality" << endl;
+											return true;
+										}
+								}
+							else if (current.getTruePos().getX() == node.getTruePos().getX())
+								{
+									if (current.getPos().getY() < node.getPos().getY() && current.getPos().getY() > destY ||
+											current.getPos().getY() > node.getPos().getY() && current.getPos().getY() < destY)
+											{
+							//				std::cout << "linear conflict for node : " << node.getValue() << " with : " << current.getValue() << " on all X with getTruePos X equality" << endl;
+											return true;
+										}
+								}
+					}
+	}
+
+	for (short y = 0; y < _size; ++y)
+	{
+			Node current = _grid[y][node.getPos().getX()];
+			if (current.getValue() != 0 && y != node.getPos().getY())
+				{
+						if (current.getTruePos().getY() == node.getTruePos().getY())
+							{
+								if (current.getPos().getX() < node.getPos().getX() && current.getPos().getX() > destX ||
+										current.getPos().getX() > node.getPos().getX() && current.getPos().getX() < destX)
+										{
+								//			std::cout << "linear conflict for node : " << node.getValue() << " with : " << current.getValue() << " on all Y with getTruePos Y equality" << endl;
+											return true;
+										}
+							}
+							else if (current.getTruePos().getX() == node.getTruePos().getX())
+							{
+								if (current.getPos().getY() < node.getPos().getY() && current.getPos().getY() > destY ||
+										current.getPos().getY() > node.getPos().getY() && current.getPos().getY() < destY)
+										{
+									//		std::cout << "linear conflict for node : " << node.getValue() << " with : " << current.getValue() << " on all Y with getTruePos X equality" << endl;
+											return true;
+										}
+							}
+				}
+	}
+	return false;
+}
+
+short nPuzzle::getManhattanAndLinearConflict() const
+{
+	short hCost = 0;
+	short nLinearConflict = 0;
+	for(short y = 0; y < _size; ++y)
+		for(short x = 0; x < _size; ++x)
+			if (_grid[y][x].getValue() != 0)
+			{
+				hCost += _grid[y][x].manhattan();
+				if (isLinearConflicted(_grid[y][x]) == true)
+					nLinearConflict++;
+			}
+
+//		system ("/bin/stty cooked");
+//		std::cout << "linear conflict : " << nLinearConflict << std::endl;
+//		system ("/bin/stty raw");
+
+		return ( hCost + (nLinearConflict * 2) );
+}
+
+float nPuzzle::fCost() const
 {
 	return _gCost + _hCost;
 }

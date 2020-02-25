@@ -51,15 +51,17 @@ class nPuzzle
 
 // cette fonction prend en paramètre une référence vers une grille préexistante et copie chaque élément vers la grille de l'instance en cours.
 	void 																	copyGrid(std::vector<std::vector<Node>> const &grid, short gridSize);
-	bool 																	copyData(nPuzzle *n);
-	nPuzzle																*copy();
+	bool 																	copyData(nPuzzle *n) const;
+	nPuzzle																*copy() const;
 
 
 // heuristics functions
 // cette fonctions va faire calculer pythagore à chaque élément de la grille et renvoie la somme de toute ces valeurs là.
 	float 																getPythagoras() const;
 	short																	getManhattan() const;
-	float 																fCost();
+	bool 																	isLinearConflicted(Node const &a) const;
+	short 																getManhattanAndLinearConflict() const;
+	float 																fCost() const;
 
 	float 																increaseHcost(Node const &n);
 	float 																reduceHcost(Node const &n);

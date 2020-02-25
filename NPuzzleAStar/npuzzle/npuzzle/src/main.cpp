@@ -53,7 +53,7 @@ void dealInput(Environment &env)
 			cout << endl << "\033[" << env.puzzle.getSize() + 6 << "A";
 			cout << "puzzle state modified by [" << amount << "] moves" << endl;
 			cout << "hCost : " << env.puzzle.getHcost() << endl;
-			cout << env.puzzle << endl;
+			cout << env.puzzle << endl/* << endl << endl << endl << endl << endl << endl << endl << endl << endl << endl << endl << endl << endl << endl << endl << endl*/;
 			system ("/bin/stty raw");
 	}
 	system ("/bin/stty cooked");
@@ -65,12 +65,12 @@ int main()
 {
 	int maxScramble = 1000;
 	std::list<std::string> path;
-	Environment env = Environment(3, 0);
+	Environment env = Environment(4, 0);
 	printNpuzzle(env.puzzle);
-	cout << endl << endl;
+	cout << endl;
 	cout << "puzzle state modified by [0] moves" << endl;
 	cout << "hCost : " << env.puzzle.getHcost() << endl;
-	cout << env.puzzle << endl;
+	cout << env.puzzle << endl/* << endl << endl << endl << endl << endl << endl << endl << endl << endl << endl << endl*/;
 	bool once = false;
 	while (once == false || env.puzzle.getHcost() != 0)
 	{
@@ -89,6 +89,7 @@ int main()
 			cout << env.puzzle << endl;
 			if (path.size() != 0)
 				break;
+
 	}
 	for(int i = 0; i < env.puzzle.getSize() + 3; ++i)
 		cout << endl;

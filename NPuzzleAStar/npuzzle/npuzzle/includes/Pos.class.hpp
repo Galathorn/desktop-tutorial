@@ -11,6 +11,7 @@ class Pos
 	~Pos();
 
 	Pos &operator=(Pos const & ref);
+	bool operator==(Pos const & ref);
 
 	void setX(short x);
 	short const &getX(void) const;

@@ -58,6 +58,7 @@ std::list<std::string> Astar::findPath(nPuzzle &p)
 		std::list<nPuzzle> closedSet = std::list<nPuzzle>();
 
 		cout << "ASTAR LAUNCH" << endl;
+//		return path;
 		openSet.push_back(p);
 		int cycle = 0;
 	/*	cout << p << endl;

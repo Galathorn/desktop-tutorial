@@ -36,3 +36,10 @@ Pos & Pos::operator=(Pos const &ref)
 	this->setX(ref.getX());
 	return *this;
 }
+
+bool Pos::operator==(Pos const &ref)
+{
+	if (ref.getY() == y && ref.getX() == x)
+			return true;
+	return false;
+}
