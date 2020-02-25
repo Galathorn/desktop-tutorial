@@ -4,18 +4,25 @@
 #include "./nPuzzle.class.hpp"
 #include "./Scrambler.class.hpp"
 #include "./Astar.class.hpp"
+#include "./IDaStar.class.hpp"
 #include <stack>
+#include <string.h>
 
 class Environment
 {
 	public:
-	Environment(short puzzleSize, int amountStack);
+	Environment(short puzzleSize);
 	~Environment(void);
 
-	std::stack<nPuzzle>	pool; // container stockant l'ensemble des node sur lesquel va travailler les algorithmes.
+	void 								parseArgs(int ac, char**av);
+
+
 	nPuzzle							puzzle;
 	Scrambler						scrambler;
 	Astar 							astar;
+	IDaStar 						idAstar;
+
+	int 								flags;
 
 };
 

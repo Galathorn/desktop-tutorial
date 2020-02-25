@@ -2,9 +2,10 @@
 #define ASTAR_CLASS_HPP
 
 #include "./Algorithm.class.hpp"
-#include "./nPuzzle.class.hpp"
 #include <list>
 #include <stack>
+
+using namespace std;
 
 class Astar : public Algorithm
 {
@@ -12,13 +13,8 @@ class Astar : public Algorithm
 	Astar();
 	~Astar();
 
-	std::vector<nPuzzle> getNeighboursUsingPool(nPuzzle &current, std::stack<nPuzzle> &pool);
-	std::vector<nPuzzle> getNeighbours(nPuzzle *current);
-	bool 									isMovementOpposite(std::string const &currentMove, std::string const &lastMove);
-
-
-	std::list<std::string> findPath(nPuzzle &puzzle);
-	std::list<std::string> findPathUsingPool(nPuzzle &puzzle, std::stack<nPuzzle> &pool);
+	bool										isMovementOpposite(std::string const &currentMove, std::string const &lastMove);
+	std::list<std::string>	findPath(nPuzzle &puzzle);
 };
 
 

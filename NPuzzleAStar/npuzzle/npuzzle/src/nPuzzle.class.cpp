@@ -5,8 +5,8 @@ using namespace std;
 nPuzzle::nPuzzle(short size) : _size(size), _id(0), _gCost(0), _parent(nullptr), _lastMove(""), _empty(nullptr), _hCost(0.0)
 {
 	this->setupGrid(size);
-//	this->fillSnailGrid(size);
-	this->fillClassicGrid(size);
+	this->fillSnailGrid(size);
+//	this->fillClassicGrid(size);
 }
 
 nPuzzle::nPuzzle(void) : _size(0), _id(0), _gCost(0), _parent(nullptr), _lastMove(""), _empty(nullptr),  _hCost(0.0)
@@ -249,23 +249,21 @@ bool nPuzzle::isLinearConflicted(Node const &node) const
 				if (current.getValue() != 0 && x != node.getPos().getX())
 					{
 							if (current.getTruePos().getY() == node.getTruePos().getY())
-								{
-									if (current.getPos().getX() < node.getPos().getX() && current.getPos().getX() > destX ||
-											current.getPos().getX() > node.getPos().getX() && current.getPos().getX() < destX)
-											{
-						//					std::cout << "linear conflict for node : " << node.getValue() << " with : " << current.getValue() << " on all X with getTruePos Y equality" << endl;
-											return true;
-										}
-								}
+									if (current.getPos().getX() <= node.getPos().getX() && current.getPos().getX() >= destX || current.getPos().getX() >= node.getPos().getX() && current.getPos().getX() <= destX)
+												if (current.getPos().getY() == current.getTruePos().getY() && node.getPos().getY() == node.getTruePos().getY())
+													if (node.getPos().getX() >= node.getTruePos().getX() && current.getPos().getX() <= current.getTruePos().getX() || node.getPos().getX() <= node.getTruePos().getX() && current.getPos().getX() >= current.getTruePos().getX())
+													{
+							//								std::cout << "linear conflit X:1 : node : " << node << " current : " << current << endl;
+															return true;
+													}
 							else if (current.getTruePos().getX() == node.getTruePos().getX())
-								{
-									if (current.getPos().getY() < node.getPos().getY() && current.getPos().getY() > destY ||
-											current.getPos().getY() > node.getPos().getY() && current.getPos().getY() < destY)
-											{
-							//				std::cout << "linear conflict for node : " << node.getValue() << " with : " << current.getValue() << " on all X with getTruePos X equality" << endl;
-											return true;
-										}
-								}
+									if (current.getPos().getY() <= node.getPos().getY() && current.getPos().getY() >= destY || current.getPos().getY() >= node.getPos().getY() && current.getPos().getY() <= destY)
+												if (current.getPos().getX() == current.getTruePos().getX() && node.getPos().getX() == node.getTruePos().getX())
+													if (node.getPos().getY() >= node.getTruePos().getY() && current.getPos().getY() <= current.getTruePos().getY() || node.getPos().getY() <= node.getTruePos().getY() && current.getPos().getY() >= current.getTruePos().getY())
+													{
+								//						std::cout << "linear conflit X:2 : node : " << node << " current : " << current << endl;
+														return true;
+													}
 					}
 	}
 
@@ -274,24 +272,22 @@ bool nPuzzle::isLinearConflicted(Node const &node) const
 			Node current = _grid[y][node.getPos().getX()];
 			if (current.getValue() != 0 && y != node.getPos().getY())
 				{
-						if (current.getTruePos().getY() == node.getTruePos().getY())
-							{
-								if (current.getPos().getX() < node.getPos().getX() && current.getPos().getX() > destX ||
-										current.getPos().getX() > node.getPos().getX() && current.getPos().getX() < destX)
-										{
-								//			std::cout << "linear conflict for node : " << node.getValue() << " with : " << current.getValue() << " on all Y with getTruePos Y equality" << endl;
-											return true;
-										}
-							}
-							else if (current.getTruePos().getX() == node.getTruePos().getX())
-							{
-								if (current.getPos().getY() < node.getPos().getY() && current.getPos().getY() > destY ||
-										current.getPos().getY() > node.getPos().getY() && current.getPos().getY() < destY)
-										{
-									//		std::cout << "linear conflict for node : " << node.getValue() << " with : " << current.getValue() << " on all Y with getTruePos X equality" << endl;
-											return true;
-										}
-							}
+					if (current.getTruePos().getY() == node.getTruePos().getY())
+							if (current.getPos().getX() <= node.getPos().getX() && current.getPos().getX() >= destX || current.getPos().getX() >= node.getPos().getX() && current.getPos().getX() <= destX)
+										if (current.getPos().getY() == current.getTruePos().getY() && node.getPos().getY() == node.getTruePos().getY())
+											if (node.getPos().getX() >= node.getTruePos().getX() && current.getPos().getX() <= current.getTruePos().getX() || node.getPos().getX() <= node.getTruePos().getX() && current.getPos().getX() >= current.getTruePos().getX())
+											{
+					//								std::cout << "linear conflit Y:1 : node : " << node << " current : " << current << endl;
+													return true;
+											}
+					else if (current.getTruePos().getX() == node.getTruePos().getX())
+							if (current.getPos().getY() <= node.getPos().getY() && current.getPos().getY() >= destY || current.getPos().getY() >= node.getPos().getY() && current.getPos().getY() <= destY)
+										if (current.getPos().getX() == current.getTruePos().getX() && node.getPos().getX() == node.getTruePos().getX())
+											if (node.getPos().getY() >= node.getTruePos().getY() && current.getPos().getY() <= current.getTruePos().getY() || node.getPos().getY() <= node.getTruePos().getY() && current.getPos().getY() >= current.getTruePos().getY())
+											{
+						//						std::cout << "linear conflit Y:2 : node : " << node << " current : " << current << endl;
+												return true;
+											}
 				}
 	}
 	return false;
@@ -310,8 +306,8 @@ short nPuzzle::getManhattanAndLinearConflict() const
 					nLinearConflict++;
 			}
 
-//		system ("/bin/stty cooked");
-//		std::cout << "linear conflict : " << nLinearConflict << std::endl;
+	//	system ("/bin/stty cooked");
+	//	std::cout << "linear conflict : " << nLinearConflict << std::endl;
 //		system ("/bin/stty raw");
 
 		return ( hCost + (nLinearConflict * 2) );

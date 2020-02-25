@@ -27,7 +27,8 @@ SRC = main.cpp \
 		Scrambler.class.cpp\
 		Algorithm.class.cpp\
 		Astar.class.cpp\
-		Environment.class.cpp
+		Environment.class.cpp\
+		IDaStar.class.cpp
 
 OBJ = $(addprefix $(PATH_SRC), $(SRC:.cpp=.o))
 

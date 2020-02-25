@@ -4,123 +4,87 @@
 #include "../includes/Scrambler.class.hpp"
 #include "../includes/Environment.class.hpp"
 #include <unistd.h>
-
-using namespace std;
-#define KEY_UP 72
-#define KEY_DOWN 80
-#define KEY_LEFT 75
-#define KEY_RIGHT 77
-
-
 #include <stdio.h>
+using namespace std;
 
-void printNpuzzle(nPuzzle &puzzle)
+bool analyseVector(vector<short> vec)
 {
-	cout << puzzle																						<< endl;
-	cout << "id : "									<< puzzle.getId()					<< endl;
-	cout << "size : "								<< puzzle.getSize()				<< endl;
-	cout << "gCost : "							<< puzzle.getGcost()			<< endl;
-	cout << "hCost : "							<< puzzle.getHcost()			<< endl;
-	cout << "Entire Pythagoras : "	<< puzzle.getPythagoras()	<< endl;
-
-	puzzle.getParent() == nullptr ? cout << "parent ID : NULL" << endl : cout << "parent ID : " << puzzle.getParent()->getId() << endl;
-	cout << "defMove : " << (puzzle.getLastMove() == "" ? "NULL" : puzzle.getLastMove()) << endl;
-	puzzle.getEmpty() == nullptr  ? cout << "empty : NULL" << endl : cout << *puzzle.getEmpty() << endl;
-	cout << endl << endl;
+	short amountInversion = 0;
+	for (short i = 0; i < vec.size(); ++i)
+		for (short j = i + 1; j < vec.size(); ++j)
+				if (vec[j] < vec[i])
+					amountInversion++;
+		cout << "Nombre d'inversion : " << amountInversion << endl;
+		if (amountInversion % 2 == 0 && vec.size() % 2 == 0)
+		{
+			cout << "nombre inversion est pair et le puzzle aussi donc ce dernier n'est PAS SOLVABLE" << endl;
+			return false;
+		}
+		else if (amountInversion % 2 != 0 && vec.size() % 2 != 0)
+		{
+			cout << "nombre inversion est impair et le puzzle aussi donc ce dernier n'est PAS SOLVABLE" << endl;
+			return false;
+		}
+		cout << "Puzzle est SOLVABLE !" << endl;
+		return true;
 }
 
-void dealInput(Environment &env)
+// dans un premier temps, nous allons remplir un tableau vector de short. Pour chaque élément dans la grille, nous allons le mettre dans le vector
+// puis nous appellerons une fonction qui analysera ce vector.
+bool checkInversionCount(nPuzzle &p)
 {
-	char c;
-	system ("/bin/stty raw");
-	int amount = 0;
-	while(c = std::getchar())
+	short size = p.getSize();
+	short goalValue = size * size;
+	std::vector<std::string> directions = {"RIGHT","DOWN","LEFT","UP"};
+	short directionSize = 4;
+	short dir = 0;
+	short countDir = size;
+	short count = 0;
+	short y = 0;
+	short x = 0;
+	short countDown = 1;
+
+	vector<short> vec = vector<short>(goalValue);
+	while (++count <= goalValue)
 	{
-			if (c == 'e')
-				break;
-			else if (c == 'z' && ++amount)
-				env.puzzle.Up();
-			else if (c == 's' && ++amount)
-				env.puzzle.Down();
-			else if (c == 'd' && ++amount)
-				env.puzzle.Right();
-			else if (c == 'q' && ++amount)
-				env.puzzle.Left();
-			else if (c == 'r' && ++amount)
-				env.scrambler.scramble(1, env.puzzle);
+		vec[count - 1] = p.getGrid()[y][x].getValue();
+		countDir--;
+		if (directions[dir] == "RIGHT")
+			countDir == 0 ? y++ : x++;
+		else if (directions[dir] == "DOWN")
+			countDir == 0 ? x-- : y++;
+		else if (directions[dir] == "LEFT")
+			countDir == 0 ? y-- : x--;
+		else if (directions[dir] == "UP")
+			countDir == 0 ? x++ : y--;
 
-			system ("/bin/stty cooked");
-			cout << endl << "\033[" << env.puzzle.getSize() + 6 << "A";
-			cout << "puzzle state modified by [" << amount << "] moves" << endl;
-			cout << "hCost : " << env.puzzle.getHcost() << endl;
-			cout << env.puzzle << endl/* << endl << endl << endl << endl << endl << endl << endl << endl << endl << endl << endl << endl << endl << endl << endl << endl*/;
-			system ("/bin/stty raw");
+			if (countDir == 0)
+			{
+				countDown++;
+				if (countDown == 2)
+				{
+					countDown = 0;
+					size--;
+				}
+				dir = (dir + 1) % directionSize;
+				countDir = size;
+			}
 	}
-	system ("/bin/stty cooked");
-
+	return analyseVector(vec);
 }
 
-
-int main()
+int main(int argc, char**argv)
 {
 	int maxScramble = 1000;
-	std::list<std::string> path;
-	Environment env = Environment(4, 0);
-	printNpuzzle(env.puzzle);
-	cout << endl;
-	cout << "puzzle state modified by [0] moves" << endl;
+	list<string> path;
+	Environment env = Environment(4);
+	env.parseArgs(argc, argv);
+	cout << env.puzzle << endl << endl << endl;
+	env.scrambler.scramble(maxScramble, env.puzzle);
+	cout << "puzzle state modified by ["<< maxScramble << "] moves" << endl;
 	cout << "hCost : " << env.puzzle.getHcost() << endl;
-	cout << env.puzzle << endl/* << endl << endl << endl << endl << endl << endl << endl << endl << endl << endl << endl*/;
-	bool once = false;
-	while (once == false || env.puzzle.getHcost() != 0)
-	{
-			once = true;
-			dealInput(env);
-			path = env.astar.findPath(env.puzzle);
-			std::list<std::string>::iterator it = path.begin();
-			std::list<std::string>::iterator end = path.end();
-			cout << endl;
-			while (it != end )
-			{
-				cout << *it << endl;
-				it++;
-			}
-			cout << endl;
-			cout << env.puzzle << endl;
-			if (path.size() != 0)
-				break;
-
-	}
-	for(int i = 0; i < env.puzzle.getSize() + 3; ++i)
-		cout << endl;
-	std::list<string>::iterator it = path.begin();
-	std::list<string>::iterator end = path.end();
-	for(;it != end; ++it)
-	{
-		if (*it == "UP")
-			env.puzzle.Up();
-		if (*it == "DOWN")
-			env.puzzle.Down();
-		if (*it == "RIGHT")
-			env.puzzle.Right();
-		if (*it == "LEFT")
-			env.puzzle.Left();
-		cout << "\033[" << env.puzzle.getSize() + 4 << "A";
-		for(int i = 0; i < env.puzzle.getSize() + 4; ++i)
-			cout << "                                       " << endl;
-
-		cout << "\033[" << env.puzzle.getSize() + 4 << "A";
-		cout << "last move : " << *it << endl;
-		cout << env.puzzle << endl;
-		system ("/bin/stty raw");
-
-		while(std::getchar() != 'e');
-		system ("/bin/stty cooked");
-		//usleep(1000000);
-
-
-	}
-	cout << "\033[" << (env.puzzle.getSize()) + 3  << "A";
 	cout << env.puzzle << endl;
+	cout << "Check inversion cout : " << endl;
+	checkInversionCount(env.puzzle);
 	return 0;
 }

@@ -28,7 +28,7 @@ coder les mouvements du puzzle CHECK
 
 créer un générateur de npuzzle qui mélange le npuzzle  CHECK
 
-créer un ensemble de fonctions permettant l'affichage pratique du puzzle. CHECK 
+créer un ensemble de fonctions permettant l'affichage pratique du puzzle. CHECK
 
 implémenter la classe environnement qui va stocker la pool de puzzle, le scrambler ainsi que les instances des classes algorithmes. CHECK
 
@@ -39,10 +39,26 @@ optimisation possible :
 - implémenter l'optimisation du parcours de l'open list comme vu dans le tuto de Unity. IMPOSSIBLE
 - transformer la open list en HEAP (datastructures)
 
-- MODIFIER LHEURISTIQUE pour implémenter les linear colision
+- MODIFIER LHEURISTIQUE pour implémenter les linear colision CHECK
+
 
 
 modifier le main afin de faire la récupération d'argument de manière dynamique et de pouvoir récupérer un npuzzle
-en argumet sous forme de fichier texte.
+en argument sous forme de fichier texte.
 
+plan :
+le main va récupérer les arguments argc argv et va l'envoyer dans le parser :
+le nombre d'options présentes seront :
+- "-A*" qui va lancer le programme en utilisant l'algorithme A*
+- "-greedy" qui va lancer le programme en mode needy
+- "-uniform" qui va activer l'heuristique null
+- "-manhattan"  activera le mode manhattan
+- "-linear"     activera l'heuristique pythagore
+- "-hamming" activera l'heuristique hamming distance
+(si plusieurs heuristique sont lancé en même temps le programme se terminera en donnant un message d'erreur)
+- "-size:" + NUMBER : activera le fait de générer une nouvelle grille de taille NUMBER et de la mélanger avec un scrambler correspondant taille * taille + (taille * (100 - taille)
+- "scrambler:" + NUMBER : activera le fait de mélanger selon un pattern précis
 
+ si aucune option n'est séléctionné l'algorithme de base sera IDA* avec l'heuristique : Manhattan+linearCollision (best heuristique)
+
+- le programme peut prendre en paramètre un fichier. Tout argument qui ne rentre pas dans une des catégorie ci dessus sera considéré comme un fichier et sera open.
