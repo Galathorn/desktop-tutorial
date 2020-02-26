@@ -7,13 +7,32 @@
 #include "./IDaStar.class.hpp"
 #include <stack>
 #include <string.h>
+#include <iostream>
+#include <fstream>
+
+#include <bitset>
+
+#define ASTAR 0x01
+#define GREEDY 0x02
+#define UNIFORM 0X04
+#define MANHATTAN 0x08
+#define LINEAR 0x10
+#define HAMMING 0x20
+#define SIZE 0x40
+#define SCRAMBLER 0x80
+#define VISUAL 1 << 8
+#define FILE 1 << 9
+#define CLASSIC 1 << 10
+
 
 class Environment
 {
 	public:
-	Environment(short puzzleSize);
-	~Environment(void);
+		Environment(short puzzleSize);
+		Environment(void);
+		~Environment(void);
 
+	void 								checkForFile(char * argv);
 	void 								parseArgs(int ac, char**av);
 
 
@@ -22,7 +41,10 @@ class Environment
 	Astar 							astar;
 	IDaStar 						idAstar;
 
-	int 								flags;
+	unsigned long						flags;
+
+	short 									sizePuzzle; // taille du puzzle qui devra etre construit
+	short 									waitLevel; // niveau d'attente
 
 };
 

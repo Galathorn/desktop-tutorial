@@ -94,17 +94,11 @@ void nPuzzle::fillEmpty(short mSize)
 		}
 }
 
-// cette fonctin va réduire la valeur de hCost en fonction de la distance en cours de la node envoyé en paramètre.
-float nPuzzle::reduceHcost(Node const &n)
+void nPuzzle::updateHcost()
 {
-	_hCost -= n.pythagoras();
-	return _hCost;
-}
-
-float nPuzzle::increaseHcost(Node const &n)
-{
-	_hCost += n.pythagoras();
-	return _hCost;
+	//		this->setHcost(this->getPythagoras()); // on recalcule tout l'heuristique a chaque deplacement.
+	//		this->setHcost(this->getManhattan()); // on recalcule tout l'heuristique a chaque deplacement.
+			this->setHcost(this->getManhattanAndLinearConflict()); // on recalcule tout l'heuristique a chaque deplacement.
 }
 
 void nPuzzle::swapNode(short y, short x, short emptyY, short emptyX)
@@ -112,24 +106,33 @@ void nPuzzle::swapNode(short y, short x, short emptyY, short emptyX)
 		Node tmpNode = _grid[y][x];
 		_grid[y][x] = _grid[emptyY][emptyX];
 		_grid[emptyY][emptyX] = tmpNode;
-
 		Pos tmpPos = Pos(_grid[y][x].getPos().getY(), _grid[y][x].getPos().getX());
 		_grid[y][x].setPos(_grid[emptyY][emptyX].getPos());
 		_grid[emptyY][emptyX].setPos(tmpPos);
 
 		_empty = &(_grid[y][x]); // on redéfinit l'adresse du pointeur sinon ça chie dans la colle.
-//		this->setHcost(this->getPythagoras()); // on recalcule tout l'heuristique a chaque deplacement.
-//		this->setHcost(this->getManhattan()); // on recalcule tout l'heuristique a chaque deplacement.
-		this->setHcost(this->getManhattanAndLinearConflict()); // on recalcule tout l'heuristique a chaque deplacement.
+		this->updateHcost();
 }
 
 // movements functions
+bool nPuzzle::applyMove(string m)
+{
+	if (m == "UP")
+		return Up();
+	else if (m == "DOWN")
+		return Down();
+	else if (m == "LEFT")
+		return Left();
+	else if (m == "RIGHT")
+		return Right();
+	return false;
+}
+
 
 bool nPuzzle::Up()
 {
 	if (_empty->getPos().getY() + 1 >= _size)
 		return false;
-		//cout << "UP" << std::endl;
 		Node n = _grid[_empty->getPos().getY() + 1][_empty->getPos().getX()];
 		swapNode(n.getPos().getY(), n.getPos().getX(), _empty->getPos().getY(), _empty->getPos().getX());
 		_lastMove = "UP";
@@ -140,8 +143,6 @@ bool nPuzzle::Right()
 {
 	if (_empty->getPos().getX() - 1 < 0)
 		return false;
-	//	cout << "RIGHT" << std::endl;
-
 		Node n = _grid[_empty->getPos().getY()][_empty->getPos().getX() - 1];
 		swapNode(n.getPos().getY(), n.getPos().getX(), _empty->getPos().getY(), _empty->getPos().getX());
 		_lastMove = "RIGHT";
@@ -152,8 +153,6 @@ bool nPuzzle::Down()
 {
 	if (_empty->getPos().getY() - 1 < 0)
 		return false;
-	//	cout << "DOWN" << std::endl;
-
 		Node n = _grid[_empty->getPos().getY() - 1][_empty->getPos().getX()];
 		swapNode(n.getPos().getY(), n.getPos().getX(), _empty->getPos().getY(), _empty->getPos().getX());
 		_lastMove = "DOWN";
@@ -164,8 +163,6 @@ bool nPuzzle::Left()
 {
 	if (_empty->getPos().getX() + 1 >= _size)
 		return false;
-//		cout << "LEFT" << std::endl;
-
 		Node n = _grid[_empty->getPos().getY()][_empty->getPos().getX() + 1];
 		swapNode(n.getPos().getY(), n.getPos().getX(), _empty->getPos().getY(), _empty->getPos().getX());
 		_lastMove = "LEFT";
@@ -173,6 +170,36 @@ bool nPuzzle::Left()
 }
 
 // fonctions de copy de l'élément en cours
+
+void nPuzzle::arrayToGrid(list<int> const &array)
+{
+	if (_size != sqrt(array.size()))
+		{
+			cout << "invalid size of array" << endl;
+			return ;
+		}
+	nPuzzle tmp = nPuzzle(_size); // temporaire qui permettra de copier les truePos de chaque node de la nouvelle instance.
+	std::list<int>::const_iterator it = array.begin();
+	std::list<int>::const_iterator end = array.end();
+	for (short y = 0; y < _size && it != end; ++y)
+		for (short x = 0; x < _size && it != end; ++x)
+			{
+				_grid[y][x].setValue(*it);
+				bool found = false;
+				for (short _y = 0; _y <_size; ++_y)
+				{
+					if (found == true)
+						break ;
+					for (short _x = 0; _x < _size; ++_x)
+						if (tmp.getGrid()[_y][_x].getValue() == *it)
+							{
+								_grid[y][x].setTruePos(tmp.getGrid()[_y][_x].getTruePos());
+								found = true;
+							}
+				}
+				it++;
+			}
+}
 
 // la fonction copyGrid va prendre en paramètre une grille pré éxistante et va copier chacun de ses éléments dans la grille de son instance.
 // si jamais elle rencontre la grille empty, elle en profite pour attribuer le pointeur empty également afin de ne pas avoir à reparcourir
@@ -252,18 +279,12 @@ bool nPuzzle::isLinearConflicted(Node const &node) const
 									if (current.getPos().getX() <= node.getPos().getX() && current.getPos().getX() >= destX || current.getPos().getX() >= node.getPos().getX() && current.getPos().getX() <= destX)
 												if (current.getPos().getY() == current.getTruePos().getY() && node.getPos().getY() == node.getTruePos().getY())
 													if (node.getPos().getX() >= node.getTruePos().getX() && current.getPos().getX() <= current.getTruePos().getX() || node.getPos().getX() <= node.getTruePos().getX() && current.getPos().getX() >= current.getTruePos().getX())
-													{
-							//								std::cout << "linear conflit X:1 : node : " << node << " current : " << current << endl;
 															return true;
-													}
 							else if (current.getTruePos().getX() == node.getTruePos().getX())
 									if (current.getPos().getY() <= node.getPos().getY() && current.getPos().getY() >= destY || current.getPos().getY() >= node.getPos().getY() && current.getPos().getY() <= destY)
 												if (current.getPos().getX() == current.getTruePos().getX() && node.getPos().getX() == node.getTruePos().getX())
 													if (node.getPos().getY() >= node.getTruePos().getY() && current.getPos().getY() <= current.getTruePos().getY() || node.getPos().getY() <= node.getTruePos().getY() && current.getPos().getY() >= current.getTruePos().getY())
-													{
-								//						std::cout << "linear conflit X:2 : node : " << node << " current : " << current << endl;
 														return true;
-													}
 					}
 	}
 
@@ -276,18 +297,12 @@ bool nPuzzle::isLinearConflicted(Node const &node) const
 							if (current.getPos().getX() <= node.getPos().getX() && current.getPos().getX() >= destX || current.getPos().getX() >= node.getPos().getX() && current.getPos().getX() <= destX)
 										if (current.getPos().getY() == current.getTruePos().getY() && node.getPos().getY() == node.getTruePos().getY())
 											if (node.getPos().getX() >= node.getTruePos().getX() && current.getPos().getX() <= current.getTruePos().getX() || node.getPos().getX() <= node.getTruePos().getX() && current.getPos().getX() >= current.getTruePos().getX())
-											{
-					//								std::cout << "linear conflit Y:1 : node : " << node << " current : " << current << endl;
 													return true;
-											}
 					else if (current.getTruePos().getX() == node.getTruePos().getX())
 							if (current.getPos().getY() <= node.getPos().getY() && current.getPos().getY() >= destY || current.getPos().getY() >= node.getPos().getY() && current.getPos().getY() <= destY)
 										if (current.getPos().getX() == current.getTruePos().getX() && node.getPos().getX() == node.getTruePos().getX())
 											if (node.getPos().getY() >= node.getTruePos().getY() && current.getPos().getY() <= current.getTruePos().getY() || node.getPos().getY() <= node.getTruePos().getY() && current.getPos().getY() >= current.getTruePos().getY())
-											{
-						//						std::cout << "linear conflit Y:2 : node : " << node << " current : " << current << endl;
 												return true;
-											}
 				}
 	}
 	return false;
@@ -305,11 +320,6 @@ short nPuzzle::getManhattanAndLinearConflict() const
 				if (isLinearConflicted(_grid[y][x]) == true)
 					nLinearConflict++;
 			}
-
-	//	system ("/bin/stty cooked");
-	//	std::cout << "linear conflict : " << nLinearConflict << std::endl;
-//		system ("/bin/stty raw");
-
 		return ( hCost + (nLinearConflict * 2) );
 }
 
@@ -361,8 +371,13 @@ std::ostream &operator<<(std::ostream &o, nPuzzle const & ref)
 
 nPuzzle & nPuzzle::operator=(nPuzzle const & src)
 {
-	(void)src;
-	// copy everything
+	this->setId(src.getId());
+	this->setSize(src.getSize());
+	this->setGcost(src.getGcost());
+	this->copyGrid(src.getGrid(), src.getSize());
+	this->setHcost(src.getHcost());
+	this->setParent(nullptr);
+	this->fillEmpty(_size);
 	return *this;
 }
 

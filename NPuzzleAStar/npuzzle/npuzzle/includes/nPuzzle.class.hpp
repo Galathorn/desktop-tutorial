@@ -6,6 +6,7 @@
 using namespace std;
 #include "../includes/Node.class.hpp"
 #include <vector>
+#include <list>
 
 class nPuzzle
 {
@@ -53,21 +54,21 @@ class nPuzzle
 	void 																	copyGrid(std::vector<std::vector<Node>> const &grid, short gridSize);
 	bool 																	copyData(nPuzzle *n) const;
 	nPuzzle																*copy() const;
+	void 																	arrayToGrid(std::list<int> const &array);
 
 
 // heuristics functions
 // cette fonctions va faire calculer pythagore à chaque élément de la grille et renvoie la somme de toute ces valeurs là.
+	void 																	updateHcost(void);
 	float 																getPythagoras() const;
 	short																	getManhattan() const;
 	bool 																	isLinearConflicted(Node const &a) const;
 	short 																getManhattanAndLinearConflict() const;
 	float 																fCost() const;
 
-	float 																increaseHcost(Node const &n);
-	float 																reduceHcost(Node const &n);
-
-
 // movements functions
+bool 																		applyMove(std::string m);
+
 	bool 																	Up();
 	bool 																	Right();
 	bool 																	Down();

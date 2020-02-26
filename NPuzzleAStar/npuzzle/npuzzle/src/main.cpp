@@ -73,18 +73,53 @@ bool checkInversionCount(nPuzzle &p)
 	return analyseVector(vec);
 }
 
+void printSolution(list<string> path, nPuzzle &p, short speed)
+{
+	list<string>::iterator it = path.begin();
+	list<string>::iterator end = path.end();
+	bool once = false;
+	cout << endl << endl;
+	for(; it != end; ++it)
+	{
+		if (once == true)
+		 cout << "\033[" << p.getSize() + 4 << "A";
+		if (once == false)
+			once = true;
+		for (list<string>::iterator i = path.begin(), e = path.end(); i != e; ++i)
+			{
+		//		if (it == end)
+		//			break;
+				if (i == it)
+					cout << "\033[31m";
+				else
+					cout << "\033[0m";
+				cout << *i << " ";
+			}
+		cout << "\033[0m";
+		p.applyMove(*it);
+		usleep((10 - speed) * 50000);
+		cout << endl << p << endl;
+	}
+}
+
 int main(int argc, char**argv)
 {
 	int maxScramble = 1000;
 	list<string> path;
-	Environment env = Environment(4);
+	Environment env = Environment();
 	env.parseArgs(argc, argv);
 	cout << env.puzzle << endl << endl << endl;
-	env.scrambler.scramble(maxScramble, env.puzzle);
-	cout << "puzzle state modified by ["<< maxScramble << "] moves" << endl;
+//	env.scrambler.scramble(maxScramble, env.puzzle);
+//	cout << "puzzle state modified by ["<< maxScramble << "] moves" << endl;
 	cout << "hCost : " << env.puzzle.getHcost() << endl;
 	cout << env.puzzle << endl;
 	cout << "Check inversion cout : " << endl;
-	checkInversionCount(env.puzzle);
+	bool solvable = checkInversionCount(env.puzzle);
+	if (solvable == true)
+	{
+		path = env.idAstar.findPath(env.puzzle);
+		if (path.size() > 0 && env.flags & VISUAL)
+			printSolution(path, env.puzzle, env.waitLevel);
+	}
 	return 0;
 }
