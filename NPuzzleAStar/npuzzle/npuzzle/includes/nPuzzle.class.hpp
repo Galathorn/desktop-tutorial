@@ -1,12 +1,21 @@
 #ifndef NPUZZLE_CLASS_HPP
 #define NPUZZLE_CLASS_HPP
 
-#include <iostream>
-
-using namespace std;
 #include "../includes/Node.class.hpp"
 #include <vector>
+#include <iostream>
 #include <list>
+
+
+#define GREEDY 0x02
+#define UNIFORM 0X04
+#define MANHATTAN 0x08
+#define LINEAR 0x10
+#define HAMMING 0x20
+#define CLASSIC (1 << 10)
+#define MANHATTAN_CONFLICT (1 << 11)
+
+using namespace std;
 
 class nPuzzle
 {
@@ -15,10 +24,10 @@ class nPuzzle
 	nPuzzle(short size);
 	~nPuzzle();
 
-	nPuzzle 					&operator=(nPuzzle const & ref);
-	bool 							operator==(nPuzzle const &ref);
-	// ensemble des methode du cube
+	nPuzzle 															&operator=(nPuzzle const & ref);
+	bool 																	operator==(nPuzzle const &ref);
 
+	// ensemble des methode du puzzle
 	void 																	setSize(short s);
 	short const 													&getSize(void) const;
 
@@ -39,6 +48,9 @@ class nPuzzle
 
 	void 																	setEmpty(Node *n);
 	Node			 														*getEmpty(void) const;
+
+	void 																	setHeuristicMod(unsigned long h);
+	unsigned long const										&getHeuristicMod(void) const;
 
 	std::vector<std::vector<Node>> const 	&getGrid() const;
 
@@ -62,6 +74,7 @@ class nPuzzle
 	void 																	updateHcost(void);
 	float 																getPythagoras() const;
 	short																	getManhattan() const;
+	short 																getHamming() const;
 	bool 																	isLinearConflicted(Node const &a) const;
 	short 																getManhattanAndLinearConflict() const;
 	float 																fCost() const;
@@ -83,6 +96,7 @@ private:
 	Node 																	*_empty;
 	std::vector<std::vector<Node>>				_grid;
 	float 																_hCost;
+	unsigned long 												_heuristicMod;
 
 };
 

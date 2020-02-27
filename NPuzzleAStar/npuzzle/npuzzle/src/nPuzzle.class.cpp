@@ -2,14 +2,14 @@
 
 using namespace std;
 
-nPuzzle::nPuzzle(short size) : _size(size), _id(0), _gCost(0), _parent(nullptr), _lastMove(""), _empty(nullptr), _hCost(0.0)
+nPuzzle::nPuzzle(short size) : _size(size), _id(0), _gCost(0), _parent(nullptr), _lastMove(""), _empty(nullptr), _hCost(0.0), _heuristicMod(MANHATTAN_CONFLICT)
 {
 	this->setupGrid(size);
 	this->fillSnailGrid(size);
 //	this->fillClassicGrid(size);
 }
 
-nPuzzle::nPuzzle(void) : _size(0), _id(0), _gCost(0), _parent(nullptr), _lastMove(""), _empty(nullptr),  _hCost(0.0)
+nPuzzle::nPuzzle(void) : _size(0), _id(0), _gCost(0), _parent(nullptr), _lastMove(""), _empty(nullptr),  _hCost(0.0), _heuristicMod(MANHATTAN_CONFLICT)
 {
 	setupGrid(0);
 }
@@ -96,9 +96,14 @@ void nPuzzle::fillEmpty(short mSize)
 
 void nPuzzle::updateHcost()
 {
-	//		this->setHcost(this->getPythagoras()); // on recalcule tout l'heuristique a chaque deplacement.
-	//		this->setHcost(this->getManhattan()); // on recalcule tout l'heuristique a chaque deplacement.
-			this->setHcost(this->getManhattanAndLinearConflict()); // on recalcule tout l'heuristique a chaque deplacement.
+	if (_heuristicMod == MANHATTAN_CONFLICT)
+		this->setHcost(this->getManhattanAndLinearConflict()); // on recalcule tout l'heuristique a chaque deplacement.
+	else if (_heuristicMod == MANHATTAN)
+		this->setHcost(this->getManhattan()); // on recalcule tout l'heuristique a chaque deplacement.
+	else if (_heuristicMod == LINEAR)
+		this->setHcost(this->getPythagoras()); // on recalcule tout l'heuristique a chaque deplacement.
+	else if (_heuristicMod == HAMMING)
+		this->setHcost(this->getHamming());
 }
 
 void nPuzzle::swapNode(short y, short x, short emptyY, short emptyX)
@@ -230,6 +235,7 @@ bool nPuzzle::copyData(nPuzzle *newPuzzle) const
 		newPuzzle->setGcost(_gCost);
 		newPuzzle->copyGrid(_grid, _size);
 		newPuzzle->setHcost(_hCost);
+		newPuzzle->setHeuristicMod(_heuristicMod);
 		return true;
 }
 
@@ -237,7 +243,7 @@ nPuzzle *nPuzzle::copy() const
 {
 	nPuzzle *copy = new nPuzzle(_size);
 	this->copyData(copy);
-	//copy->fillEmpty(copy->getSize());
+	copy->fillEmpty(copy->getSize());
 	return copy;
 }
 
@@ -262,6 +268,16 @@ short nPuzzle::getManhattan() const
 		for(short x = 0; x < _size; ++x)
 			if (_grid[y][x].getValue() != 0)
 				hCost += _grid[y][x].manhattan();
+		return hCost;
+}
+
+short nPuzzle::getHamming() const
+{
+	short hCost = 0;
+	for(short y = 0; y < _size; ++y)
+		for(short x = 0; x < _size; ++x)
+			if (_grid[y][x].getValue() != 0 && _grid[y][x].isMisplaced())
+					hCost++;
 		return hCost;
 }
 
@@ -329,13 +345,14 @@ float nPuzzle::fCost() const
 }
 
 // setters and getters
-void nPuzzle::setSize(short size)				{_size = size;}
-void nPuzzle::setId(short id)						{_id = id;}
-void nPuzzle::setGcost(short g)					{_gCost = g;}
-void nPuzzle::setHcost(float h)					{_hCost = h;}
-void nPuzzle::setParent(nPuzzle *p)			{_parent = p;}
-void nPuzzle::setLastMove(std::string s)	{_lastMove = s;}
-void nPuzzle::setEmpty(Node *n) 				{_empty = n;}
+void nPuzzle::setSize(short size)								{_size = size;}
+void nPuzzle::setId(short id)										{_id = id;}
+void nPuzzle::setGcost(short g)									{_gCost = g;}
+void nPuzzle::setHcost(float h)									{_hCost = h;}
+void nPuzzle::setParent(nPuzzle *p)							{_parent = p;}
+void nPuzzle::setLastMove(std::string s)				{_lastMove = s;}
+void nPuzzle::setEmpty(Node *n) 								{_empty = n;}
+void nPuzzle::setHeuristicMod(unsigned long h)	{_heuristicMod = h;}
 
 short const 													&nPuzzle::getSize(void)			const		{return _size;}
 short const														&nPuzzle::getId(void)				const		{return _id;}
@@ -345,7 +362,7 @@ nPuzzle 															*nPuzzle::getParent(void)		const		{return _parent;}
 std::string const											&nPuzzle::getLastMove(void)	const		{return _lastMove;}
 Node			 														*nPuzzle::getEmpty(void)		const		{return _empty;}
 std::vector<std::vector<Node>> const	&nPuzzle::getGrid()					const		{return _grid;}
-
+unsigned long const 									&nPuzzle::getHeuristicMod() const 	{return _heuristicMod;}
 
 // overload operator
 std::ostream &operator<<(std::ostream &o, nPuzzle const & ref)
@@ -378,6 +395,7 @@ nPuzzle & nPuzzle::operator=(nPuzzle const & src)
 	this->setHcost(src.getHcost());
 	this->setParent(nullptr);
 	this->fillEmpty(_size);
+	this->setHeuristicMod(src.getHeuristicMod());
 	return *this;
 }
 
@@ -392,6 +410,8 @@ bool nPuzzle::operator==(nPuzzle const &ref)
 		if (ref.getLastMove() != _lastMove)
 			return false;
 		if (ref.getHcost() != _hCost)
+			return false;
+		if (ref.getHeuristicMod() != _heuristicMod)
 			return false;
 		for (short y = 0; y < _size; ++y)
 			for (short x = 0; x < _size; ++x)

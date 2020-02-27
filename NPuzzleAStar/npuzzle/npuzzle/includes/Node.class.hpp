@@ -15,6 +15,7 @@ class Node
 
 	float 			pythagoras()	const;
 	short 			manhattan() 	const;
+	bool 				isMisplaced() const;
 
 	Pos const 	&getPos() const;
 	Pos const 	&getTruePos() const;

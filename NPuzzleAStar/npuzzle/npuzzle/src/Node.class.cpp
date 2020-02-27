@@ -29,6 +29,14 @@ short Node::manhattan() const
   short val = std::abs(_truePos.getX() - _pos.getX()) + std::abs(_truePos.getY() - _pos.getY());
   return ( val );
 }
+
+bool Node::isMisplaced(void) const
+{
+  if (_pos.getY() != _truePos.getY() || _pos.getX() != _truePos.getX())
+    return true;
+  return false;
+}
+
 //getter and setter
 
 void Node::setValue(short const &v) {_value = v;}

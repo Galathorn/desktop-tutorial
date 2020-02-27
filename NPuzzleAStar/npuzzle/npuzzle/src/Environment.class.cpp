@@ -2,10 +2,9 @@
 
 using namespace std;
 
-Environment::Environment(short sizePuzzle) : puzzle(nPuzzle(sizePuzzle)), scrambler(Scrambler()), astar(Astar()), flags(0), waitLevel(0) {}
+Environment::Environment(short sizePuzzle) : puzzle(nPuzzle(sizePuzzle)), scrambler(Scrambler()), astar(Astar()), flags(0), waitLevel(0), scramblerAmountMove(0) {}
 
-Environment::Environment(void) : scrambler(Scrambler()), astar(Astar()), flags(0), waitLevel(0) {}
-
+Environment::Environment(void) : scrambler(Scrambler()), astar(Astar()), flags(0), waitLevel(0), scramblerAmountMove(0) {}
 
 Environment::~Environment() {}
 
@@ -61,11 +60,37 @@ void Environment::checkForFile(char*argv)
 }
 
 
+void Environment::checkForFlagsError() const
+{
+	short heuristicCounter = 0;
+	if ((flags & MANHATTAN))
+		 heuristicCounter++;
+	if ((flags & LINEAR))
+		 heuristicCounter++;
+	if ((flags & HAMMING))
+		 heuristicCounter++;
+	if (heuristicCounter > 1)
+		error("ERROR : MULTIPLE HEURISTIC FOUND");
+	if (flags & GREEDY && flags & UNIFORM)
+		error("ERROR : OPPOSITE BEHAVIOR DETECTED: GREEDY AND UNIFORM MOD BOTH ENABLED");
+	if (flags & FILE && flags & SIZE)
+	 	error("ERROR : OPPOSITE BEHAVIOR DETECTED : FILE AND SIZE CAN'T BE BOTH ENABLED");
+	if (flags & CLASSIC && flags & FILE )
+	 	error("ERROR : CANT ACTIVATE CLASSIC MODE ON EXTERIOR PUZZLE");
+}
+
+void Environment::error(string s) const
+{
+	cout << s << endl;
+	exit(0);
+}
+
 void Environment::parseArgs(int argc, char**argv)
 {
 	if (argc == 1)
 	{
 		cout << "USAGE :" << endl;
+		cout << "-verbose		: allow program to print more information than asks in the 42 subject" << endl;
 		cout << "-Astar  		: Activate the A* resolution algorithm." << endl;
 		cout << "-greedy   		: Activate the greedy search mod" << endl;
 		cout << "-uniform   		: all heuristic will return 0. Brute Force will be enabled" << endl;
@@ -74,9 +99,9 @@ void Environment::parseArgs(int argc, char**argv)
 		cout << "-linear 		: set heuristic to Linear distance (pythagoras)" << endl;
 		cout << "-hamming 		: set heuristic to Hamming distance (amount of misplaced tile)" << endl;
 		cout << "-visual:NUMBER		: Activate the visual mode when solving the puzzle. Enter the number between 0 and 9 to define speed solving" << endl;
-		cout << "-size:NUMBER 		: The programm will setup a random grid by itself, scramble it and solve it. If a file is found, this option is disabled." << endl;
+		cout << "-size:NUMBER 		: The programm will setup a random grid by itself, scramble it and solve it." << endl;
 		cout << "-scrambler:NUMBER	: The programm wil randomly apply NUMBER moves on the current puzzle (file or auto-generate nPuzzle)" << endl << endl;
-		cout << "info : read README.txt to see more info about nPuzzle parser behavior" << endl;
+		cout << "info : read README.txt to see more info about nPuzzle parser behavior, and possible errors." << endl;
 		exit(0);
 	}
 	else
@@ -98,70 +123,54 @@ void Environment::parseArgs(int argc, char**argv)
 					flags |= HAMMING;
 				else if (!strcmp("-classic", argv[i]))
 					flags |= CLASSIC;
+				else if (!strcmp("-verbose", argv[i]))
+					flags |= VERBOSE;
 				else if (s.find("-visual:", 0) != string::npos)
 				{
 					flags |= VISUAL;
+					if (s[s.find(":") + 2] != '\0')
+						error("ERROR : invalid number after -visual:");
 					waitLevel = s[s.find(":") + 1] - 48;
 					if (waitLevel < 0 || waitLevel > 9)
-						{
-								cout << "ERROR : invalid number after -visual: " << endl;
-								exit(0);
-						}
+						error("ERROR : invalid number after -visual: ");
 				}
 				else if (s.find("-size:", 0) != string::npos)
 				{
 					int i = s.find(":") + 1;
-					cout << "index : "<< i << endl;
 					string str = "";
 					for(;s[i] != '\0'; ++i)
 					{
 						if (!isdigit(s[i]))
-						{
-							cout << "ERROR : invalid number after -size:" << endl;
-							exit(0);
-						}
+							error("ERROR : invalid number after -size:");
 						str += s[i];
 					}
 					if (str.size() > 0)
 						sizePuzzle = stoi(str);
-					cout << "sizePuzzle : " << sizePuzzle << endl;
+					if (sizePuzzle < 2)
+						error("ERROR : Can't create a puzzle of sizes less than 2.");
           flags |= SIZE;
 				}
 				else if (s.find("-scrambler:", 0) != string::npos)
 				{
+					int i = s.find(":") + 1;
+					string str = "";
+					for(;s[i] != '\0'; ++i)
+					{
+						if (!isdigit(s[i]))
+							error("ERROR : invalid number after -scrambler:");
+						str += s[i];
+					}
+					if (str.size() > 0)
+						scramblerAmountMove = stoi(str);
+					if (scramblerAmountMove < 0)
+						error("ERROR : PARSING SCRAMBLER : invalid amount of move.");
           flags |= SCRAMBLER;
-
-
 				}
 				else
 					checkForFile(argv[i]);
 	   }
    }
-	 short heuristicCounter = 0;
-   if ((flags & MANHATTAN))
-	 		heuristicCounter++;
-   if ((flags & LINEAR))
-	 		heuristicCounter++;
-   if ((flags & HAMMING))
-	 		heuristicCounter++;
-	 if (heuristicCounter > 1)
-	 	{
-				cout << "ERROR : MULTIPLE HEURISTIC FOUND" << endl;
-				exit(0);
-		}
-	 if (flags & GREEDY && flags & UNIFORM)
-		{
-				cout << "ERROR : OPPOSITE BEHAVIOR DETECTED: GREEDY AND UNIFORM MOD BOTH ENABLED" << endl;
-				exit(0);
-		}
-		if (flags & FILE && flags & SIZE)
-		{
-			cout << "ERROR : OPPOSITE BEHAVIOR DETECTED : FILE AND SIZE CAN'T BE BOTH ENABLED" << endl;
-			exit(0);
-		}
-		if (flags & CLASSIC && flags & FILE )
-		{
-			cout << "ERROR : CANT ACTIVATE CLASSIC MODE ON EXTERIOR PUZZLE" << endl;
-			exit(0);
-		}
+	 if (!(flags & LINEAR) && !(flags & HAMMING) && !(flags & MANHATTAN))
+	 	flags |= MANHATTAN_CONFLICT;
+	 checkForFlagsError();
 }

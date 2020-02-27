@@ -1,6 +1,1 @@
-# This puzzle is solvable
-4
-10  1 12 13
-15  9  2  6
-14  0 11  4
- 8  5  3  7
+Can't generate a puzzle with size lower than 2. It says so in the help. Dummy.

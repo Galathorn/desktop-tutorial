@@ -11,7 +11,6 @@ class IDaStar : public Algorithm
 	IDaStar(void);
 	~IDaStar(void);
 
-
 	bool										isMovementOpposite(std::string const &currentMove, std::string const &lastMove);
 	int 										search(list<nPuzzle> &path, short gCost, short bound, short cycle);
 	std::list<std::string>	findPath(nPuzzle &puzzle);

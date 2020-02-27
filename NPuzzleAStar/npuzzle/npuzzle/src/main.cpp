@@ -1,10 +1,11 @@
-#include <iostream>
 
 #include "../includes/nPuzzle.class.hpp"
 #include "../includes/Scrambler.class.hpp"
 #include "../includes/Environment.class.hpp"
 #include <unistd.h>
 #include <stdio.h>
+#include <iostream>
+
 using namespace std;
 
 bool analyseVector(vector<short> vec)
@@ -14,18 +15,16 @@ bool analyseVector(vector<short> vec)
 		for (short j = i + 1; j < vec.size(); ++j)
 				if (vec[j] < vec[i])
 					amountInversion++;
-		cout << "Nombre d'inversion : " << amountInversion << endl;
 		if (amountInversion % 2 == 0 && vec.size() % 2 == 0)
 		{
-			cout << "nombre inversion est pair et le puzzle aussi donc ce dernier n'est PAS SOLVABLE" << endl;
+			cout << "Number of inversion is even and puzzle size too so the puzzle is NOT SOLVABLE." << endl;
 			return false;
 		}
 		else if (amountInversion % 2 != 0 && vec.size() % 2 != 0)
 		{
-			cout << "nombre inversion est impair et le puzzle aussi donc ce dernier n'est PAS SOLVABLE" << endl;
+			cout << "Number of inversion is odd and puzzle size too, so the puzzle is NOT SOLVABLE." << endl;
 			return false;
 		}
-		cout << "Puzzle est SOLVABLE !" << endl;
 		return true;
 }
 
@@ -43,8 +42,8 @@ bool checkInversionCount(nPuzzle &p)
 	short y = 0;
 	short x = 0;
 	short countDown = 1;
-
 	vector<short> vec = vector<short>(goalValue);
+
 	while (++count <= goalValue)
 	{
 		vec[count - 1] = p.getGrid()[y][x].getValue();
@@ -57,7 +56,6 @@ bool checkInversionCount(nPuzzle &p)
 			countDir == 0 ? y-- : x--;
 		else if (directions[dir] == "UP")
 			countDir == 0 ? x++ : y--;
-
 			if (countDir == 0)
 			{
 				countDown++;
@@ -73,27 +71,42 @@ bool checkInversionCount(nPuzzle &p)
 	return analyseVector(vec);
 }
 
-void printSolution(list<string> path, nPuzzle &p, short speed)
+void printDetailedSolution(list<string> path, nPuzzle &p, short speed)
 {
+	int modValue = 5;
+	int amountJump = 0;
 	list<string>::iterator it = path.begin();
+	it++;
 	list<string>::iterator end = path.end();
 	bool once = false;
 	cout << endl << endl;
 	for(; it != end; ++it)
 	{
+		bool first = false;
+		int count = 0;
+		int jumpValue = p.getSize() + 4 + amountJump;
+		amountJump = 0;
 		if (once == true)
-		 cout << "\033[" << p.getSize() + 4 << "A";
+		 cout << "\033[" << jumpValue << "A";
 		if (once == false)
 			once = true;
 		for (list<string>::iterator i = path.begin(), e = path.end(); i != e; ++i)
 			{
-		//		if (it == end)
-		//			break;
+				if (first == false)
+					{
+						first = true;
+						continue;
+					}
 				if (i == it)
 					cout << "\033[31m";
 				else
 					cout << "\033[0m";
 				cout << *i << " ";
+				if (++count % modValue == 0)
+				{
+					cout << endl;
+					amountJump++;
+				}
 			}
 		cout << "\033[0m";
 		p.applyMove(*it);
@@ -102,24 +115,69 @@ void printSolution(list<string> path, nPuzzle &p, short speed)
 	}
 }
 
+void setupHeuristic(nPuzzle & puzzle, unsigned long flags)
+{
+	if (flags & MANHATTAN_CONFLICT)
+	{
+		if (flags & VERBOSE)
+			cout << "Heuristic is set to : MANHATTAN DISTANCE + LINEAR CONFLICT" << endl;
+		puzzle.setHeuristicMod(MANHATTAN_CONFLICT);
+	}
+	else if (flags & MANHATTAN)
+	{
+		if (flags & VERBOSE)
+			cout << "Heuristic is set to : MANHATTAN DISTANCE" << endl;
+		puzzle.setHeuristicMod(MANHATTAN);
+	}
+	else if (flags & LINEAR)
+	{
+		if (flags & VERBOSE)
+			cout << "Heuristic is set to : LINEAR DISTANCE" << endl;
+		puzzle.setHeuristicMod(LINEAR);
+	}
+	else if (flags & HAMMING)
+	{
+		if (flags & VERBOSE)
+			cout << "Heuristic is set to : HAMMING DISTANCE" << endl;
+		puzzle.setHeuristicMod(HAMMING);
+	}
+}
+
+void printSolution(list<string> path)
+{
+	list<string>::iterator it = path.begin();
+	list<string>::iterator end = path.end();
+	for (; it != end; ++it)
+		cout << *it << " ";
+	cout << endl;
+}
+
 int main(int argc, char**argv)
 {
-	int maxScramble = 1000;
-	list<string> path;
 	Environment env = Environment();
 	env.parseArgs(argc, argv);
-	cout << env.puzzle << endl << endl << endl;
-//	env.scrambler.scramble(maxScramble, env.puzzle);
-//	cout << "puzzle state modified by ["<< maxScramble << "] moves" << endl;
-	cout << "hCost : " << env.puzzle.getHcost() << endl;
-	cout << env.puzzle << endl;
-	cout << "Check inversion cout : " << endl;
-	bool solvable = checkInversionCount(env.puzzle);
-	if (solvable == true)
+	list<string> path;
+	if (env.flags & VERBOSE)
+		cout << "Basic puzzle state : " << endl << env.puzzle << endl;
+	if (checkInversionCount(env.puzzle))
 	{
-		path = env.idAstar.findPath(env.puzzle);
+		setupHeuristic(env.puzzle, env.flags);
+		if (env.flags & ASTAR)
+		{
+				if (env.flags & VERBOSE)
+					cout << "Path search with A* algorithm." << endl;
+				path = env.astar.findPath(env.puzzle);
+		}
+		else
+		{
+			if (env.flags & VERBOSE)
+					cout << "Path search with Iterative Deepening A* algorithm." << endl;
+			path = env.idAstar.findPath(env.puzzle);
+		}
 		if (path.size() > 0 && env.flags & VISUAL)
-			printSolution(path, env.puzzle, env.waitLevel);
+			printDetailedSolution(path, env.puzzle, env.waitLevel);
+		else if (path.size() > 0)
+			printSolution(path);
 	}
 	return 0;
 }
