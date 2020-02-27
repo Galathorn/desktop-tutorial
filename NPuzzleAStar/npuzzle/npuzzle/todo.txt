@@ -62,3 +62,9 @@ le nombre d'options présentes seront :
  si aucune option n'est séléctionné l'algorithme de base sera IDA* avec l'heuristique : Manhattan+linearCollision (best heuristique)
 
 - le programme peut prendre en paramètre un fichier. Tout argument qui ne rentre pas dans une des catégorie ci dessus sera considéré comme un fichier et sera open.
+
+reste à faire :
+-greedy -uniform 
+ajout des variable dans la classe algorithm ainsi que la modification de ces variables lors des algorithmes en eux même.
+Le résultat de tout cela permettra d'avoir un rendu correspondant au sujet et donnant plus d'informations sur les résultats des différentes heuristiques.
+

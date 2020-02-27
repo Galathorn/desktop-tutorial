@@ -15,15 +15,15 @@ bool IDaStar::isMovementOpposite(std::string const &currentMove, std::string con
 		return false;
 }
 
-
 int IDaStar::search(list<nPuzzle> &path, short g, short bound, short cycle)
 {
 	nPuzzle current = path.back();
+	setTimeComplexity(getTimeComplexity() + 1);
 	current.fillEmpty(current.getSize());
 	short f = g + current.getHcost();
 	if (f > bound)
 		return f;
-	if (current.getHcost() == 0)
+	if (current.getHcost() == 0 && current.isGoal())
 		return 0;
 	short min = SHORT_MAX;
 	std::vector<nPuzzle > neighbours = std::vector<nPuzzle>();
@@ -60,6 +60,8 @@ int IDaStar::search(list<nPuzzle> &path, short g, short bound, short cycle)
 			if (std::find(path.begin(), path.end(), neighbours[i]) == path.end())
 					{
 						path.push_back(neighbours[i]);
+						if (getSizeComplexity() < path.size())
+							setSizeComplexity(path.size());
 						short t = search(path, g + 1, bound, cycle + 1);
 						if (t == 0)
 							return 0;
@@ -67,7 +69,6 @@ int IDaStar::search(list<nPuzzle> &path, short g, short bound, short cycle)
 							min = t;
 						if (path.size() > 0)
 							path.pop_back();
-
 					}
 	return min;
 }
@@ -88,10 +89,12 @@ list<string> IDaStar::findPath(nPuzzle &p)
 		if (t == 0 || t == SHORT_MAX)
 		{
 			for (list<nPuzzle>::iterator it = l.begin(), end = l.end(); it != end; it++)
+				if ((*it).getLastMove() != "")
 					path.push_back((*it).getLastMove());
 			return path;
 		}
 		bound = t;
 	}
+
 	return path;
 }

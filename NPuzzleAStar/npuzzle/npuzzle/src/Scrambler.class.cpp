@@ -10,6 +10,7 @@ Scrambler::~Scrambler(void) {}
 
 bool Scrambler::applyMove(std::string move, nPuzzle &puzzle)
 {
+//  cout << "move : " << move << endl;
   if (move == lastMove)
     return false;
   if (move == "UP")
@@ -28,7 +29,7 @@ void Scrambler::scramble(short n, nPuzzle &puzzle)
   std::string m = _moves[rand() % _moves.size()];
   short       v = 0;
   short counterFail = 0;
-  short limitFail = 50;
+  short limitFail = 500;
   for (short i = 0; i < n; ++i)
   {
       counterFail = 0;
@@ -44,8 +45,8 @@ void Scrambler::scramble(short n, nPuzzle &puzzle)
           m = _noLeft[rand() % _noLeft.size()];
           if (applyMove(m, puzzle) == true)
             break;
-          if (counterFail++ == 50)
-              break;
+          if (counterFail++ == limitFail)
+            m = _moves[rand() % _moves.size()];
       }
       lastMove = m;
   }

@@ -22,6 +22,7 @@ class nPuzzle
 	public :
 	nPuzzle(void);
 	nPuzzle(short size);
+	nPuzzle(short size, bool mod);
 	~nPuzzle();
 
 	nPuzzle 															&operator=(nPuzzle const & ref);
@@ -67,6 +68,7 @@ class nPuzzle
 	bool 																	copyData(nPuzzle *n) const;
 	nPuzzle																*copy() const;
 	void 																	arrayToGrid(std::list<int> const &array);
+	bool 													  			isGoal() const;
 
 
 // heuristics functions

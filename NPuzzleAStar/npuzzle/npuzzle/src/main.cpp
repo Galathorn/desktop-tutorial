@@ -18,12 +18,12 @@ bool analyseVector(vector<short> vec)
 		if (amountInversion % 2 == 0 && vec.size() % 2 == 0)
 		{
 			cout << "Number of inversion is even and puzzle size too so the puzzle is NOT SOLVABLE." << endl;
-			return false;
+			exit(0);
 		}
 		else if (amountInversion % 2 != 0 && vec.size() % 2 != 0)
 		{
 			cout << "Number of inversion is odd and puzzle size too, so the puzzle is NOT SOLVABLE." << endl;
-			return false;
+			exit(0);
 		}
 		return true;
 }
@@ -71,18 +71,35 @@ bool checkInversionCount(nPuzzle &p)
 	return analyseVector(vec);
 }
 
+void printExecutionDetails(Environment const &env, int size)
+{
+	if (env.flags & ASTAR)
+		{
+				cout << endl << "Amount of movement : [" << size << "]" << endl;
+				cout << "Complexity in time : [" << env.astar.getTimeComplexity() << "]" << endl;
+				cout << "Complexity in size : [" << env.astar.getSizeComplexity() << "]" << endl << endl;
+		}
+	else
+	{
+		cout << endl << "Amount of movement : [" << size << "]" << endl;
+		cout << "Complexity in time : [" << env.idAstar.getTimeComplexity() << "]" << endl;
+		cout << "Complexity in size : [" << env.idAstar.getSizeComplexity() << "]" << endl << endl;
+	}
+}
+
 void printDetailedSolution(list<string> path, nPuzzle &p, short speed)
 {
 	int modValue = 5;
 	int amountJump = 0;
 	list<string>::iterator it = path.begin();
-	it++;
+	if (*it == "")
+		it++;
 	list<string>::iterator end = path.end();
 	bool once = false;
 	cout << endl << endl;
+
 	for(; it != end; ++it)
 	{
-		bool first = false;
 		int count = 0;
 		int jumpValue = p.getSize() + 4 + amountJump;
 		amountJump = 0;
@@ -92,11 +109,8 @@ void printDetailedSolution(list<string> path, nPuzzle &p, short speed)
 			once = true;
 		for (list<string>::iterator i = path.begin(), e = path.end(); i != e; ++i)
 			{
-				if (first == false)
-					{
-						first = true;
+				if (*i == "")
 						continue;
-					}
 				if (i == it)
 					cout << "\033[31m";
 				else
@@ -141,11 +155,19 @@ void setupHeuristic(nPuzzle & puzzle, unsigned long flags)
 			cout << "Heuristic is set to : HAMMING DISTANCE" << endl;
 		puzzle.setHeuristicMod(HAMMING);
 	}
+	else if (flags & UNIFORM)
+	{
+		if (flags & VERBOSE)
+			cout << "Heuristic is set to : UNIFORM SEARCH -> BRUTE FORCE" << endl;
+			puzzle.setHeuristicMod(UNIFORM);
+	}
 }
 
 void printSolution(list<string> path)
 {
 	list<string>::iterator it = path.begin();
+	if (*it == "")
+		it++;
 	list<string>::iterator end = path.end();
 	for (; it != end; ++it)
 		cout << *it << " ";
@@ -157,27 +179,54 @@ int main(int argc, char**argv)
 	Environment env = Environment();
 	env.parseArgs(argc, argv);
 	list<string> path;
-	if (env.flags & VERBOSE)
-		cout << "Basic puzzle state : " << endl << env.puzzle << endl;
-	if (checkInversionCount(env.puzzle))
+
+	if (env.flags & FILE)
+		checkInversionCount(env.puzzle);
+	else if (env.flags & SIZE)
 	{
-		setupHeuristic(env.puzzle, env.flags);
-		if (env.flags & ASTAR)
+		if (env.flags & CLASSIC && env.flags && VERBOSE)
+			cout << "Classic position is enabled" << endl << endl;
+		env.puzzle = nPuzzle(env.sizePuzzle, env.flags & CLASSIC ? true : false);
+	}
+	else
+	{
+		env.puzzle = nPuzzle(3, env.flags & CLASSIC ? true : false);
+		env.flags |= SCRAMBLER;
+		env.scramblerAmountMove = 100;
+		if (env.flags & VERBOSE)
+			cout << "No file or size provided. Auto-generated random 3*3 puzzle." << endl << endl;
+		if (env.flags & VERBOSE && env.flags & CLASSIC)
+			cout << "Classic position is enabled" << endl << endl;
+	}
+	setupHeuristic(env.puzzle, env.flags);
+	if (!(env.flags & FILE))
+		cout << "Basic puzzle state : " << endl << env.puzzle << endl;
+	if ((env.flags & SCRAMBLER) && env.scramblerAmountMove > 0)
+	{
+			env.scrambler.scramble(static_cast<int>(env.scramblerAmountMove), env.puzzle);
+			if (env.flags & VERBOSE)
+			{
+				cout << "Puzzle is scramble with : " << env.scramblerAmountMove << endl;
+				cout << "New puzzle state :" << endl << env.puzzle << endl;
+			}
+	}
+	if (env.flags & ASTAR)
 		{
 				if (env.flags & VERBOSE)
-					cout << "Path search with A* algorithm." << endl;
+					cout << "Path search with A* algorithm." << endl << endl;
 				path = env.astar.findPath(env.puzzle);
 		}
-		else
+	else
 		{
 			if (env.flags & VERBOSE)
-					cout << "Path search with Iterative Deepening A* algorithm." << endl;
+					cout << "Path search with Iterative Deepening A* algorithm." << endl << endl;
 			path = env.idAstar.findPath(env.puzzle);
 		}
-		if (path.size() > 0 && env.flags & VISUAL)
+	if (path.size() > 0)
+		printExecutionDetails(env, path.size());
+	if (path.size() > 0 && env.flags & VISUAL)
 			printDetailedSolution(path, env.puzzle, env.waitLevel);
-		else if (path.size() > 0)
+	else if (path.size() > 0)
 			printSolution(path);
-	}
 	return 0;
 }

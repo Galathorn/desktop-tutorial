@@ -26,8 +26,9 @@ std::list<std::string> Astar::findPath(nPuzzle &p)
 					if ((*it).fCost() < (*current).fCost() || ((*it).fCost() == (*current).fCost() && (*it).getHcost() < (*current).getHcost()))
 							current = it;
 				closedSet.splice(closedSet.end(), openSet, current);
+				setTimeComplexity(getTimeComplexity() + 1);
 				(*current).fillEmpty((*current).getSize());
-				if ((*current).getHcost() <= 0)
+				if ((*current).getHcost() <= 0 && (*current).isGoal())
 				{
 						nPuzzle *c = (*current).getParent();
 						if (c == nullptr)
@@ -77,13 +78,17 @@ std::list<std::string> Astar::findPath(nPuzzle &p)
 								continue;
 						neighbours[i].fillEmpty(neighbours[i].getSize());
 						bool contains = std::find(openSet.begin(), openSet.end(), neighbours[i]) == openSet.end() ? false : true;
-						short newMovementCostToNeighbour = (*current).getGcost() + 1;
+						short newMovementCostToNeighbour = (*current).getHeuristicMod() & UNIFORM ? 0 : ((*current).getGcost() + 1);
 						if (newMovementCostToNeighbour < neighbours[i].getGcost() || contains == false)
 						{
 									neighbours[i].setGcost(newMovementCostToNeighbour);
 									neighbours[i].setParent(&(*current));
 									if (contains == false)
+									{
 										openSet.push_back(neighbours[i]);
+										if (getSizeComplexity() < openSet.size())
+											setSizeComplexity(openSet.size());
+									}
 						}
 				}
 		}

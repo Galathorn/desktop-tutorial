@@ -38,6 +38,7 @@ class Environment
 		void 									checkForFlagsError() const;
 		void 									checkForFile(char * argv);
 		void 									parseArgs(int ac, char**av);
+		void 									checkFile(char* file) const;
 
 
 	nPuzzle									puzzle;

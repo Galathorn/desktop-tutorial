@@ -9,6 +9,14 @@ nPuzzle::nPuzzle(short size) : _size(size), _id(0), _gCost(0), _parent(nullptr),
 //	this->fillClassicGrid(size);
 }
 
+
+nPuzzle::nPuzzle(short size, bool mode) : _size(size), _id(0), _gCost(0), _parent(nullptr), _lastMove(""), _empty(nullptr), _hCost(0.0), _heuristicMod(MANHATTAN_CONFLICT)
+{
+	this->setupGrid(size);
+	mode == false ? this->fillSnailGrid(size) : this->fillClassicGrid(size);
+}
+
+
 nPuzzle::nPuzzle(void) : _size(0), _id(0), _gCost(0), _parent(nullptr), _lastMove(""), _empty(nullptr),  _hCost(0.0), _heuristicMod(MANHATTAN_CONFLICT)
 {
 	setupGrid(0);
@@ -104,6 +112,8 @@ void nPuzzle::updateHcost()
 		this->setHcost(this->getPythagoras()); // on recalcule tout l'heuristique a chaque deplacement.
 	else if (_heuristicMod == HAMMING)
 		this->setHcost(this->getHamming());
+	else if (_heuristicMod == UNIFORM)
+		this->setHcost(0);
 }
 
 void nPuzzle::swapNode(short y, short x, short emptyY, short emptyX)
@@ -204,6 +214,16 @@ void nPuzzle::arrayToGrid(list<int> const &array)
 				}
 				it++;
 			}
+}
+
+// cette fonction parcours la grille et vérifie que chaque node est bel est bien à sa place, si c'est le cas cela veut direque le puzzl en cours est bien la solution.
+bool nPuzzle::isGoal(void) const
+{
+	for (short y = 0; y < _size; ++y)
+		for (short x = 0; x < _size; ++x)
+			if (_grid[y][x].getPos().getX() != _grid[y][x].getTruePos().getX() || _grid[y][x].getPos().getY() != _grid[y][x].getTruePos().getY())
+				return false;
+  return true;
 }
 
 // la fonction copyGrid va prendre en paramètre une grille pré éxistante et va copier chacun de ses éléments dans la grille de son instance.

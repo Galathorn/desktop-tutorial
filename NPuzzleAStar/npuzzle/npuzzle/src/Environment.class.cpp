@@ -8,6 +8,57 @@ Environment::Environment(void) : scrambler(Scrambler()), astar(Astar()), flags(0
 
 Environment::~Environment() {}
 
+void Environment::checkFile(char*av) const
+{
+	ifstream file;
+	file.open(av);
+	string line;
+	int size = 0;
+	bool first = true;
+	bool sizeFound = false;
+	while (!file.eof())
+	{
+		int amountNumber = 0;
+		bool isFirstTrigger = false;
+		getline(file, line);
+		if (line.size() == 0)
+			continue;
+		for (short i = 0; i < line.size(); ++i)
+			{
+				if (line[i] == '#')
+					break;
+				if (line[i] != ' ' && !isdigit(line[i]))
+					error("ERROR : invalid file format.");
+				if (first == true && isdigit(line[i])) // on essai de récupérer la taille du puzzle.
+				{
+					first = false;
+					sizeFound = true;
+					int x = i;
+					while (x < line.size() && line[x] != ' ')
+						x++;
+					 size = stoi(line.substr(i, i - x));
+					 if (size > 30)
+					 	error("ERROR : Puzzle size is to large... My program can't solve 5*5 puzzle efficiently so no use to deal with such big puzzles.");
+					 else if (x < line.size())
+					 	error("ERROR : invalid format for getting true size of puzzle");
+					 else if (size == 0)
+						error("ERROR : A puzzle can't have a size of zero.");
+					isFirstTrigger = true;
+					 break;
+				}
+				if (first == false && isdigit(line[i]))
+				{
+					if (amountNumber == 0)
+						amountNumber++;
+					else if (i - 1 > 0 && !isdigit(line[i - 1]))
+						amountNumber++;
+				}
+			}
+			if (first == false && amountNumber != size && isFirstTrigger == false)
+				error("ERROR : bad amount of number in file on each line...");
+	}
+}
+
 void Environment::checkForFile(char*argv)
 {
 	ifstream ifs;
@@ -19,6 +70,7 @@ void Environment::checkForFile(char*argv)
 		cout << "ERROR : INVALID ARGUMENT OR CANT OPEN THE FILE"<< endl;
 		exit(0);
 	}
+	this->checkFile(argv);
 	flags |= FILE; // on active le flag FILE sur la variable file
 	list<int> l; // liste contenant l'ensemble des nombres
 	string		line;
@@ -57,6 +109,18 @@ void Environment::checkForFile(char*argv)
 	puzzle.arrayToGrid(l);
 	puzzle.updateHcost();
 	puzzle.fillEmpty(puzzle.getSize());
+	// dernier check pour verifier que les nombres sont bien contiguës
+	l.sort();
+	list<int>::iterator it = l.begin();
+	list<int>::iterator tmp = it;
+	it++;
+	list<int>::iterator end = l.end();
+	for (int i = 2; it != end; ++it, ++i)
+	{
+		if ( (*tmp) != (*it) - 1 && (*it) != i)
+			error("ERROR: Number does not a series of n + 1 or/and does not start with 1.");
+		tmp++;
+	}
 }
 
 
@@ -69,6 +133,8 @@ void Environment::checkForFlagsError() const
 		 heuristicCounter++;
 	if ((flags & HAMMING))
 		 heuristicCounter++;
+	if ((flags & UNIFORM))
+			heuristicCounter++;
 	if (heuristicCounter > 1)
 		error("ERROR : MULTIPLE HEURISTIC FOUND");
 	if (flags & GREEDY && flags & UNIFORM)
@@ -144,6 +210,8 @@ void Environment::parseArgs(int argc, char**argv)
 							error("ERROR : invalid number after -size:");
 						str += s[i];
 					}
+					if (str.size() > 2)
+						error("ERROR : invalid number after -size, number too big. (My program can't solve a 5*5 anyway so it's usless to create a grid that big.)");
 					if (str.size() > 0)
 						sizePuzzle = stoi(str);
 					if (sizePuzzle < 2)
@@ -160,6 +228,8 @@ void Environment::parseArgs(int argc, char**argv)
 							error("ERROR : invalid number after -scrambler:");
 						str += s[i];
 					}
+					if (str.size() > 5)
+						error("ERROR : PARSING SCRAMBLER : too much amount of move.");
 					if (str.size() > 0)
 						scramblerAmountMove = stoi(str);
 					if (scramblerAmountMove < 0)
@@ -170,7 +240,7 @@ void Environment::parseArgs(int argc, char**argv)
 					checkForFile(argv[i]);
 	   }
    }
-	 if (!(flags & LINEAR) && !(flags & HAMMING) && !(flags & MANHATTAN))
+	 if (!(flags & LINEAR) && !(flags & HAMMING) && !(flags & MANHATTAN) && !(flags & UNIFORM))
 	 	flags |= MANHATTAN_CONFLICT;
 	 checkForFlagsError();
 }
