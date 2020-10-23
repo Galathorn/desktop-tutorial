@@ -1,0 +1,209 @@
+projet Rubik's cube:
+goal:
+
+creating a rubiks cube that can solve itself. The main goal of this Project
+is to be able to create all databases of the Roux Method.
+
+ALL CLASSES:
+
+Cube
+Scrambler
+configurationManager
+
+
+
+CLASSES DEFINITION :
+
+cube:
+{
+the Cube class must have an array of 6 matrix of 9 int
+it must have at least one method for each rubiks cube movement that does exist.
+all rubikscube movements :
+
+F R U D B L M | F2 R2 U2 D2 B2 L2 M2 | F' R' U' D' B' L' M'
+
+r | r' | r2
+l | l' | l2
+
+y | y2 | y'
+x | x2 | x'
+z | z2 | z'
+}
+
+
+line to column
+line to column Reverse
+column to line
+column to line reverse
+
+
+
+TOOLS FUNCTIONS : 
+
+function that takes a cube in parameter and print it in a fashion way
+
+
+OTHER : 
+
+each configuration contains two things : 
+	- the weight of the configuration
+	- a list of movements that allow to solve a specific part of the cube
+
+maintenant que le cube possède quasiment tout ses mouvements et qu'il ne bug pas.
+Il faut encore que je code théoriquement:
+
+- coder des mouvements manquant dans le cube : l l' l2 r r' r2 //CHECK
+
+class fileManager !
+
+- une fonction prenant un cube en paramètre et en renvoyant le nom de la configuration. // CHECK
+
+- une fonction prenant un cube en paramètre, récupère sa configuration, ouvre le fichier correspondant, et renvoie l'algo de résolution. Si le fichier n'existe pas, l'algo renvoie une list<string> vide.
+
+- une fonction qui prend en paramètre une list<string> et qui renvoie un int représentant le poids de la série de mouvements. // CHECK
+
+- une fonction qui prend en paramètre une list<string> représentant une série de movements ainsi qu'une string représentant une configuration
+et crée un fichier du même nom contenant le poids de la série de mouvements ainsi que la série de mouvements. CHECK
+
+- une fonction prenant un cube en paramètre ainsi qu'une liste de mouvements, récupère la configuration du cube,
+tante d'ouvrir un fichier avec le même nom que la configuration, si cela échoue, il en crée un.
+
+-une fonction qui va créer un fichier stockant les index du bruteForce en cours. Si jamais un input spécifique comme ECHAP est appuyé, la boucle s'arrête,
+les index sont sauvegardé dans un fichier, 
+
+
+BRUTE FORCE:
+
+La fonction brute force va posséder un tableau de 9 cases pouvant avoir au max la valeur 999 999 999
+chaque case du tableau contiendra un int qui sera un index dans un tableau de mouvements.
+Donc le nombre dans le tableau ne sera pas une base de 10 mais une base de TAB_2.SIZE();
+
+donc:
+
+int clockTab[9]; (full of 0);
+[0][0][0][0][0][0][0][0][0]
+
+vector<string> moves = {"R","U","F","L"...}
+
+je vais avoir un soucis avec cubeToConfig.
+Il me faut un tableau de nodeInfo pour savoir quel pièce est intéressante.
+
+L'algo est le suivant :
+cubeToConfig reçoit un cube suivis d'un tableau de nodeInfo. Chaque node info représentera un index de pièce.
+Les configurations seront toujours écrite avec des X pour les caractères nul et un nombre lorsque la bonne valeur sera représenté.
+
+Admettons que l'on souhaite créer une configuration concernant la position d'un cubon bleu et blanc de la méthode Roux.
+
+cubeToConfiguration vaudra : Cube c, et list<s_nodeInfo> l
+{
+	string conf = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"; // cette configuration représente une configuration avec 0 pièce intéressante.
+	Ensuite, pour chaque cubon qui nous intéresse dans la liste, on va aller remplacer les char dans la string en fonction de leur positions...
+	
+	for (list<s_nodeInfo>::iterator it = l.begin(), end = l.end(); it != end; ++it) // Pour chaque nodeInfo...
+	{
+		list<s_nodeInfo> tmpList = nodeTree[(*it).matrix][(*it).index];
+		for (list<s_nodeInfo>::iterator i = tmpList.begin(), iend = tmpList.end(); i != iend; ++i) // pour chaque nodeInfo qui est affilié à la pièce qui m'intéresse
+		{
+			s_nodeInfo n = (*i);
+			conf[n.matrix * 9 + n.index] = c.matrix[n.matrix][n.index];
+		}
+			s_nodeInfo n = (*it);
+			conf[n.matrix * 9 + n.index] = c.matrix[n.matrix][n.index];
+	}
+	cout << conf << endl;
+	return conf;
+}
+
+TOUT CE QUE JAI FAIT EST DE LA PURE MERDE
+
+En gros, il faut repérer la bonne pièce dans le cube et pas repérer la pièce situé au bon endroit... Donc faut faire l'inverse, et oui, ça sera beaucoup + couteux !
+
+Cube neutralCube;
+
+for (list<s_nodeInfo>::iterator it = l.begin(), end = l.end(); it != end; ++it)
+{	
+	bool isPieceFound = false;
+	for (int y = 0; y < 6; ++y) // on parcours tout le cube pour chaque pièce
+	{
+		for (int x = 0; x < 9; ++x)
+		{
+			if (c.matrix[y][x] == neutralCube[(*it).matrix][(*it).index] && nodeTree[(*it).matrix][(*it).index].size() == nodeTree[y][x].size())
+			{
+				list<s_nodeInfo>::iterator it2 = nodeTree[(*it).matrix][(*it).index].begin();
+				list<s_nodeInfo>::iterator end2 = nodeTree[(*it).matrix][(*it).index].end();
+				int counter = 0;
+				for (; it2 != end2; ++it2)
+				{
+					list<s_nodeInfo>::iterator it3 = nodeTree[y][x].begin();
+					list<s_nodeInfo>::iterator end3 = nodeTree[y][x].end();
+					for (; it3 != end3; ++it3)
+						if (c.matrix[(*it3).matrix][(*it3).index] == neutralCube.matrix[(*it2).matrix][(*it2).index])
+						{
+							counter++;
+							break;
+						}
+				}
+				if (counter == nodeTree[(*it).matrix][(*it).index].size())
+				{
+					isPieceFound = true;
+					it2 = nodeTree[(*it).matrix][(*it).index].begin();
+					for(; it2 != end2; ++it2)
+						conf[(*it2).matrix * 9 + (*it2).index] = neutralCube[(*it2).matrix][(*it2).index] + 48;
+					conf[y * 9 + x] = neutralCube[(*it).matrix][(*it).index] + 48;
+					break;
+				}
+			}	
+		}
+		if (isPieceFound)
+			break;
+	}
+}
+
+faire une fonction qui va clean ma list de mouvements.
+
+clean le code.
+
+
+
+
+implémenter le système de nettoyage de la chaine de char: CHECK
+Faire une fonction qui va déterminer l'état du cube en cours. CHECK
+
+0 = neutral
+1 = y
+2 = y2
+3 = y'
+
+
+		state == 0 && m == y
+		return 1;
+		state == 0 && m == y2
+		return 2
+		state == 0 && m == y'
+		return 3;
+
+
+		state == 1 && m == y
+		return 2
+		state == 1 && m == y2
+		return 3;
+		state == 1 && m == y'
+		return 0
+
+
+
+		state == 2 && m == y
+		return 3
+		state == 2 && m == y2
+		return 0;
+		state == 2 && m == y'
+		return 1;
+
+
+		state == 3 && m == y
+		return 0;
+		state == 3 && m == y2
+		return 1;
+		state == 3 && m == y'
+		return 2
+
