@@ -15,21 +15,21 @@ class Node
 
 	float 			pythagoras()	const;
 	short 			manhattan() 	const;
-	bool 				isMisplaced() const;
+	bool 			isMisplaced() const;
 
-	Pos const 	&getPos() const;
-	Pos const 	&getTruePos() const;
-	short const &getValue() const;
+	Pos const		&getPos() const;
+	Pos const		&getTruePos() const;
+	short const		&getValue() const;
 
-	void 				setValue(short const &v);
-	void 				setPos(Pos const & p);
-	void 				setTruePos(Pos const & p);
+	void 			setValue(short const &v);
+	void 			setPos(Pos const & p);
+	void 			setTruePos(Pos const & p);
 
 
 private:
-	short				_value;
-	Pos					_pos;
-	Pos					_truePos;
+	short			_value;
+	Pos				_pos;
+	Pos				_truePos;
 
 };
 
